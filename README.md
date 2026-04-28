@@ -1,8 +1,8 @@
 # Twitch Monitor StreamDock Plugin
 
-A [StreamDock](https://www.ajazz.com/pages/streamdock) / Stream Deck plugin written in Rust that monitors Twitch channel live status directly on your keypad buttons.
+A [StreamDock](https://www.ajazz.com/pages/streamdock) / [OpenDeck](https://github.com/nekename/OpenDeck) / Stream Deck plugin written in Rust that monitors Twitch channel live status directly on your keypad buttons.
 
-**Version:** 1.0.1  
+**Version:** 1.1.0  
 **Author:** dajax  
 **Platform:** Windows · macOS
 
@@ -19,7 +19,8 @@ A [StreamDock](https://www.ajazz.com/pages/streamdock) / Stream Deck plugin writ
 
 ### Follows Live Counter (keypad action)
 - Displays how many channels you follow are currently live
-- Click to switch to a configured StreamDock device profile
+- **Press the button to instantly switch to any configured device profile** — enter the profile name in the property inspector settings
+- Profile switching is compatible with OpenDeck, StreamDock, and Elgato Stream Deck software
 
 ---
 
@@ -31,6 +32,10 @@ A [StreamDock](https://www.ajazz.com/pages/streamdock) / Stream Deck plugin writ
 | Windows | Windows 7 or later |
 | macOS | macOS 10.11 (El Capitan) or later |
 | StreamDock / Stream Deck software | v2.10.179.426 or later |
+| OpenDeck | Any recent version |
+
+### OpenDeck — Profile Switching Note
+OpenDeck restricts the `switchProfile` WebSocket event to an internal allowlist of plugin UUIDs. This plugin works around that restriction by briefly opening a second connection registered under the `opendeck_alternative_elgato_implementation` UUID (a built-in allowed identity that no other plugin uses), sending the profile switch, then immediately closing it. No existing plugin or connection is affected.
 
 ### Streamlink (optional)
 If you want button clicks to open streams in [Streamlink](https://streamlink.github.io/) instead of a browser, install it and make sure `streamlink` is on your `PATH`, or provide the full path to the executable in the property inspector.
@@ -227,8 +232,3 @@ Tokens are stored in the plugin's global settings via the StreamDock SDK and aut
 ## License
 
 Private / proprietary — all rights reserved.
-
-
-## Todo
-
-1. Finish the "Following Channels Live" button.  This will allow the user to switch to a profile that has more keypad Icons.

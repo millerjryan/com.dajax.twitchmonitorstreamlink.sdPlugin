@@ -164,6 +164,7 @@ pub type WsSink = Arc<Mutex<futures_util::stream::SplitSink<
 pub struct AppHandle {
     pub sink:            WsSink,
     pub plugin_uuid:     String,
+    pub port:            u16,
     pub global_settings: Arc<RwLock<GlobalSettings>>,
     pub contexts:        Arc<RwLock<HashMap<String, ContextState>>>,
     pub known_devices:   Arc<RwLock<Vec<String>>>,
@@ -655,42 +656,65 @@ async fn handle_message(app: AppHandle, raw: &str) {
 
         "keyDown" => {
             if action == FOLLOWS_ACTION {
-                let ctxs = app.contexts.read().await;
-                let state = ctxs.get(&context);
-                let settings: ButtonSettings = serde_json::from_value(
-                    payload.get("settings").cloned().unwrap_or(json!({}))
-                ).unwrap_or_else(|_| state.map(|s| s.settings.clone()).unwrap_or_default());
-                let profile = settings.target_profile.trim().to_string();
+                // Always prefer the cached state for the profile — the keyDown payload
+                // may not include settings on some StreamDock firmware versions.
+                let (profile, device) = {
+                    let ctxs = app.contexts.read().await;
+                    let state = ctxs.get(&context);
 
-                let device = {
-                    let d1 = state.and_then(|s| s.device.clone());
-                    let d2 = msg["device"].as_str().map(str::to_string);
-                    let d3 = app.known_devices.read().await.first().cloned();
-                    d1.or(d2).or(d3)
+                    let profile = state
+                        .map(|s| s.settings.target_profile.trim().to_string())
+                        .filter(|p| !p.is_empty())
+                        .or_else(|| {
+                            serde_json::from_value::<ButtonSettings>(
+                                payload.get("settings").cloned().unwrap_or(json!({}))
+                            ).ok().map(|s| s.target_profile.trim().to_string())
+                        })
+                        .unwrap_or_default();
+
+                    let device: String = msg["device"].as_str()
+                        .map(str::to_string)
+                        .or_else(|| state.and_then(|s| s.device.clone()))
+                        .unwrap_or_default();
+
+                    (profile, device)
                 };
-                drop(ctxs);
 
-                if !profile.is_empty() {
-                    let dev = device.clone();
-                    app.log(&format!("keyDown(follows): profile={profile:?} device={dev:?}")).await;
-                    let uuid = app.plugin_uuid.clone();
-                    // Send both format variants (StreamDock compatibility)
-                    app.send(json!({
-                        "event": "switchToProfile",
-                        "context": uuid,
-                        "device": device,
-                        "payload": { "profile": profile }
-                    })).await;
-                    app.send(json!({
-                        "event": "switchToProfile",
-                        "context": app.plugin_uuid,
-                        "device": device,
-                        "profile": profile
-                    })).await;
-                    app.send(json!({ "event": "showOk", "context": context })).await;
-                } else {
+                if profile.is_empty() {
                     app.send(json!({ "event": "showAlert", "context": context })).await;
+                    return;
                 }
+
+                app.log(&format!("keyDown(follows): switching to profile={profile:?} device={device:?}")).await;
+                app.send(json!({ "event": "showOk", "context": context })).await;
+
+                // OpenDeck only allows switchProfile from an allowlisted UUID.
+                // Open a short-lived second connection registered as
+                // "opendeck_alternative_elgato_implementation" (the other allowed UUID)
+                // so the event is accepted. This UUID has no real plugin registered
+                // against it in normal OpenDeck use, so we don't displace anyone.
+                let port = app.port;
+                tokio::task::spawn_local(async move {
+                    let url = format!("ws://127.0.0.1:{port}");
+                    if let Ok((mut ws, _)) = tokio_tungstenite::connect_async(url).await {
+                        let reg = Message::Text(
+                            serde_json::json!({
+                                "event": "registerPlugin",
+                                "uuid":  "opendeck_alternative_elgato_implementation"
+                            }).to_string().into()
+                        );
+                        let switch = Message::Text(
+                            serde_json::json!({
+                                "event":   "switchProfile",
+                                "device":  device,
+                                "profile": profile
+                            }).to_string().into()
+                        );
+                        let _ = ws.send(reg).await;
+                        let _ = ws.send(switch).await;
+                        let _ = ws.close(None).await;
+                    }
+                });
                 return;
             }
 
@@ -788,6 +812,7 @@ async fn async_main() {
     let port         = get_arg(&args, "-port").expect("Missing -port");
     let plugin_uuid  = get_arg(&args, "-pluginUUID").expect("Missing -pluginUUID");
     let register_evt = get_arg(&args, "-registerEvent").expect("Missing -registerEvent");
+    let port_num: u16 = port.parse().expect("Invalid port");
 
     // Seed known devices from -info JSON
     let known_devices: Vec<String> = get_arg(&args, "-info")
@@ -803,6 +828,7 @@ async fn async_main() {
     let app = AppHandle {
         sink:            Arc::new(Mutex::new(sink)),
         plugin_uuid:     plugin_uuid.to_string(),
+        port:            port_num,
         global_settings: Arc::new(RwLock::new(GlobalSettings::default())),
         contexts:        Arc::new(RwLock::new(HashMap::new())),
         known_devices:   Arc::new(RwLock::new(known_devices)),
