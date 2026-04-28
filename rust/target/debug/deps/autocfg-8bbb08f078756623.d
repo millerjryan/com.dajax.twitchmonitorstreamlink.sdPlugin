@@ -1,0 +1,10 @@
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\debug\deps\autocfg-8bbb08f078756623.d: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\error.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\rustc.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\version.rs
+
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\debug\deps\libautocfg-8bbb08f078756623.rlib: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\error.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\rustc.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\version.rs
+
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\debug\deps\libautocfg-8bbb08f078756623.rmeta: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\error.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\rustc.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\version.rs
+
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\lib.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\error.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\rustc.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\autocfg-1.5.0\src\version.rs:

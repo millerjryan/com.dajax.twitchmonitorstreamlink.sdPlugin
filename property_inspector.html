@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Twitch Monitor Settings</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple:     #9146FF;
+      --purple-dk:  #6A30CC;
+      --purple-lt:  #BF94FF;
+      --live-red:   #E91916;
+      --bg:         #1a1a2e;
+      --surface:    #16213e;
+      --surface2:   #0f3460;
+      --text:       #e8e8f0;
+      --text-muted: #8888a8;
+      --border:     #2a2a4a;
+      --input-bg:   #0d1b2a;
+      --success:    #00d4aa;
+      --error:      #ff4757;
+      --radius:     8px;
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 14px;
+      font-size: 13px;
+      min-width: 220px;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 36px; height: 36px;
+      background: var(--purple);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(145,70,255,0.4);
+    }
+    .header-text h1 { font-size: 14px; font-weight: 700; color: var(--purple-lt); letter-spacing: 0.02em; }
+    .header-text p  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    /* ── Status Card ── */
+    .status-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px;
+      margin-bottom: 14px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 64px;
+    }
+    .avatar-wrap { position: relative; flex-shrink: 0; }
+    #avatar-img {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid var(--border);
+      display: block;
+      transition: filter 0.3s, border-color 0.3s;
+    }
+    .live-dot {
+      position: absolute; bottom: 1px; right: 1px;
+      width: 12px; height: 12px;
+      background: var(--live-red);
+      border: 2px solid var(--bg);
+      border-radius: 50%;
+      display: none;
+    }
+    .live-dot.visible { display: block; }
+    .status-info { flex: 1; min-width: 0; }
+    #status-name { font-weight: 700; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    #status-label { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 8px; border-radius: 4px;
+      font-size: 10px; font-weight: 700;
+      letter-spacing: 0.05em; text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .badge.live    { background: var(--live-red); color: #fff; }
+    .badge.offline { background: var(--surface2); color: var(--text-muted); }
+    .badge.unknown { background: var(--border);   color: var(--text-muted); }
+
+    /* ── Form sections ── */
+    .form-section { margin-bottom: 14px; }
+    .section-title {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--text-muted); margin-bottom: 8px;
+    }
+    .field { margin-bottom: 10px; }
+    label  { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+
+    input[type="text"],
+    input[type="password"] {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text);
+      padding: 7px 10px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 2px rgba(145,70,255,0.2);
+    }
+    input::placeholder { color: var(--text-muted); opacity: 0.6; }
+
+    /* ── Toggle ── */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .toggle-label { font-size: 12px; font-weight: 600; color: var(--text); }
+    .toggle {
+      position: relative;
+      width: 38px; height: 20px;
+      flex-shrink: 0;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-track {
+      position: absolute; inset: 0;
+      background: var(--border);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .toggle input:checked + .toggle-track { background: var(--purple); }
+    .toggle-track::after {
+      content: "";
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 16px; height: 16px;
+      background: white;
+      border-radius: 50%;
+      transition: transform 0.2s;
+    }
+    .toggle input:checked + .toggle-track::after { transform: translateX(18px); }
+
+    /* ── Sound file picker ── */
+    .sound-picker {
+      display: flex;
+      gap: 6px;
+      align-items: stretch;
+    }
+    .sound-name {
+      flex: 1;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text-muted);
+      padding: 7px 10px;
+      font-size: 11px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: default;
+      min-width: 0;
+    }
+    .sound-name.has-file { color: var(--text); }
+
+    .btn-browse {
+      background: var(--surface2);
+      color: var(--purple-lt);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 0 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      font-family: inherit;
+      transition: background 0.15s;
+      flex-shrink: 0;
+    }
+    .btn-browse:hover { background: var(--purple-dk); color: #fff; }
+
+    /* Hidden real file input */
+    #file-input { display: none; }
+
+    /* ── Volume ── */
+    .volume-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .volume-row label { margin-bottom: 0; flex-shrink: 0; width: 52px; }
+
+    input[type="range"] {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px; height: 14px;
+      border-radius: 50%;
+      background: var(--purple);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover { background: var(--purple-lt); }
+
+    #volume-val {
+      font-size: 11px;
+      color: var(--text-muted);
+      width: 30px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── Sound preview button ── */
+    .btn-preview {
+      width: 100%;
+      background: transparent;
+      color: var(--purple-lt);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s, border-color 0.15s;
+      margin-bottom: 10px;
+      display: none;
+    }
+    .btn-preview.visible { display: block; }
+    .btn-preview:hover { background: rgba(145,70,255,0.15); border-color: var(--purple); }
+
+    /* ── Sound section disabled state ── */
+    .sound-config { transition: opacity 0.2s; }
+    .sound-config.disabled {
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    /* ── API Help ── */
+    .api-help {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-left: 3px solid var(--purple);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      margin-bottom: 14px;
+      font-size: 11px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .api-help strong { color: var(--purple-lt); display: block; margin-bottom: 4px; font-size: 11px; }
+    .api-help a { color: var(--purple-lt); text-decoration: none; }
+    .api-help ol { margin: 6px 0 0 14px; }
+
+    /* ── Save Button ── */
+    .btn-save {
+      width: 100%;
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 9px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+      font-family: inherit;
+    }
+    .btn-save:hover { background: var(--purple-dk); }
+    .btn-save:active { transform: scale(0.98); }
+
+    /* ── Poll status / spinner ── */
+    #poll-status { text-align: center; font-size: 10px; color: var(--text-muted); margin-top: 10px; }
+    .spinner {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border: 2px solid rgba(145,70,255,0.3);
+      border-top-color: var(--purple);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle; margin-right: 4px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Divider ── */
+    .divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+    /* ── Twitch Account / Auth ── */
+    .auth-hint {
+      font-size: 11px; color: var(--text-muted);
+      margin-bottom: 10px; line-height: 1.5;
+    }
+    .btn-connect {
+      width: 100%;
+      background: var(--purple);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      padding: 8px 12px;
+      font-size: 12px; font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-connect:hover { background: var(--purple-dk); }
+    .auth-pending-row {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .btn-cancel-auth {
+      width: 100%; background: transparent;
+      color: var(--text-muted); border: 1px solid var(--border);
+      border-radius: 5px; padding: 5px;
+      font-size: 11px; cursor: pointer; font-family: inherit;
+    }
+    .btn-cancel-auth:hover { border-color: var(--error); color: var(--error); }
+    .auth-user-row {
+      display: flex; align-items: center; gap: 10px;
+    }
+    #auth-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%; object-fit: cover;
+      border: 2px solid var(--purple); flex-shrink: 0;
+    }
+    .auth-user-info { flex: 1; min-width: 0; }
+    .auth-user-name { font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .auth-connected-tag { font-size: 10px; color: var(--success); margin-top: 2px; }
+    .btn-disconnect {
+      background: transparent; color: var(--error);
+      border: 1px solid var(--error); border-radius: 5px;
+      padding: 4px 8px; font-size: 10px; font-weight: 600;
+      cursor: pointer; font-family: inherit; flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .btn-disconnect:hover { background: rgba(255,71,87,0.12); }
+
+    /* ── Button Action options ── */
+    .action-options { display: flex; gap: 8px; margin-bottom: 10px; }
+    .action-option {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 5px;
+      padding: 10px 6px;
+      background: var(--input-bg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.3;
+    }
+    .action-option input[type="radio"] { display: none; }
+    .action-option .action-icon { font-size: 20px; }
+    .action-option:has(input:checked) {
+      border-color: var(--purple);
+      background: rgba(145,70,255,0.1);
+      color: var(--text);
+    }
+    .streamlink-path { display: none; }
+    .streamlink-path.visible { display: block; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">🎮</div>
+  <div class="header-text">
+    <h1>Twitch Monitor</h1>
+    <p>Live status on your Stream Dock</p>
+  </div>
+</div>
+
+<!-- Live status preview -->
+<div class="status-card">
+  <div class="avatar-wrap">
+    <img id="avatar-img" src="data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='24' fill='%23555'/><text x='24' y='32' text-anchor='middle' font-size='28' fill='%23aaa'>T</text></svg>" alt="avatar"/>
+    <div class="live-dot" id="live-dot"></div>
+  </div>
+  <div class="status-info">
+    <div id="status-name">Not configured</div>
+    <div id="status-label">Enter a username below</div>
+  </div>
+  <span class="badge unknown" id="status-badge">—</span>
+</div>
+
+<!-- Twitch Account -->
+<div class="form-section">
+  <div class="section-title">Twitch Account</div>
+
+  <!-- Not connected -->
+  <div id="auth-unauth">
+    <p class="auth-hint">Connect your Twitch account so the plugin can access stream data. Your credentials are never stored by this plugin.</p>
+    <button class="btn-connect" id="btn-connect">🔗&nbsp; Connect with Twitch</button>
+  </div>
+
+  <!-- Waiting for browser -->
+  <div id="auth-pending" style="display:none">
+    <div class="auth-pending-row"><span class="spinner"></span>Waiting for Twitch authorization…</div>
+    <button class="btn-cancel-auth" id="btn-cancel-auth">Cancel</button>
+  </div>
+
+  <!-- Connected -->
+  <div id="auth-connected" style="display:none">
+    <div class="auth-user-row">
+      <img id="auth-avatar" src="" alt=""/>
+      <div class="auth-user-info">
+        <div class="auth-user-name" id="auth-user-name"></div>
+        <div class="auth-connected-tag">✓ Connected</div>
+      </div>
+      <button class="btn-disconnect" id="btn-disconnect">Disconnect</button>
+    </div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Channel settings -->
+<div class="form-section">
+  <div class="section-title">Channel</div>
+  <div class="field">
+    <label for="inp-username">Twitch Username</label>
+    <input type="text" id="inp-username" placeholder="e.g. ninja" autocomplete="off" spellcheck="false"/>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Button press action -->
+<div class="form-section">
+  <div class="section-title">Button Press Action</div>
+  <div class="action-options">
+    <label class="action-option">
+      <input type="radio" name="btn-action" id="action-browser" value="browser" checked/>
+      <span class="action-icon">🌐</span>
+      <span>Open in<br/>Browser</span>
+    </label>
+    <label class="action-option">
+      <input type="radio" name="btn-action" id="action-streamlink" value="streamlink"/>
+      <span class="action-icon">📺</span>
+      <span>Open with<br/>Streamlink</span>
+    </label>
+  </div>
+  <div class="field streamlink-path" id="streamlink-path-field">
+    <label for="inp-streamlink-path">Streamlink Executable Path <span style="font-weight:400;opacity:0.6">(optional)</span></label>
+    <input type="text" id="inp-streamlink-path" placeholder="streamlink  (or full path, e.g. C:\streamlink\streamlink.exe)" autocomplete="off" spellcheck="false"/>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- Live alert sound -->
+<div class="form-section">
+  <div class="section-title">Live Alert Sound</div>
+
+  <!-- Enable toggle -->
+  <div class="toggle-row">
+    <span class="toggle-label">🔔 Play sound when live</span>
+    <label class="toggle">
+      <input type="checkbox" id="chk-alert-enabled"/>
+      <span class="toggle-track"></span>
+    </label>
+  </div>
+
+  <!-- Sound file + volume (disabled when toggle is off) -->
+  <div class="sound-config disabled" id="sound-config">
+
+    <div class="field">
+      <label>Alert Sound File (.mp3)</label>
+      <div class="sound-picker">
+        <div class="sound-name" id="sound-name-display">No file selected</div>
+        <button class="btn-browse" id="btn-browse">Browse…</button>
+      </div>
+      <input type="file" id="file-input" accept=".mp3,audio/mpeg"/>
+    </div>
+
+    <!-- Volume -->
+    <div class="volume-row">
+      <label for="inp-volume">Volume</label>
+      <input type="range" id="inp-volume" min="0" max="100" value="80"/>
+      <span id="volume-val">80%</span>
+    </div>
+
+    <!-- Preview button — only visible when a file is loaded -->
+    <button class="btn-preview" id="btn-preview">▶ Preview Sound</button>
+
+  </div>
+</div>
+
+<button class="btn-save" id="btn-save">💾 Save Settings</button>
+<div id="poll-status"></div>
+
+<script>
+// ── Property Inspector ────────────────────────
+
+let ws = null;
+let piUUID = null;
+let actionInfo = null;
+
+// Preserve the full settings object so saving never overwrites auth tokens.
+let cachedSettings = {};
+
+// In-memory sound data (base64 data URI) — not stored in a DOM input
+// because the file picker can't be pre-populated for security reasons.
+// We hold a reference here and re-save on every Save click.
+let currentSoundData = null;   // base64 data URI string or null
+let currentSoundName = "";     // display name
+
+const inpUsername     = document.getElementById("inp-username");
+const btnSave         = document.getElementById("btn-save");
+const avatarImg       = document.getElementById("avatar-img");
+const liveDot         = document.getElementById("live-dot");
+const statusName      = document.getElementById("status-name");
+const statusLabel     = document.getElementById("status-label");
+const statusBadge     = document.getElementById("status-badge");
+const pollStatus      = document.getElementById("poll-status");
+
+// Auth elements
+const authUnauth    = document.getElementById("auth-unauth");
+const authPending   = document.getElementById("auth-pending");
+const authConnected = document.getElementById("auth-connected");
+const btnConnect    = document.getElementById("btn-connect");
+const btnCancelAuth = document.getElementById("btn-cancel-auth");
+const btnDisconnect = document.getElementById("btn-disconnect");
+const authAvatar    = document.getElementById("auth-avatar");
+const authUserName  = document.getElementById("auth-user-name");
+
+// Twitch app config — must match what is registered at dev.twitch.tv/console
+const TWITCH_CLIENT_ID  = 'wq0kudroby7abstyx6ihak1suxog1r';
+const TWITCH_REDIRECT   = 'http://localhost:7878';
+
+function showAuthState(state) {
+  authUnauth.style.display    = state === 'unauth'    ? '' : 'none';
+  authPending.style.display   = state === 'pending'   ? '' : 'none';
+  authConnected.style.display = state === 'connected' ? '' : 'none';
+}
+
+btnConnect.addEventListener("click", () => {
+  // Encode the action context into the state token so the plugin callback
+  // server can identify which button to update without any sendToPlugin round-trip.
+  // Format: <16-byte random hex nonce>.<percent-encoded context>
+  const arr = new Uint8Array(16);
+  window.crypto.getRandomValues(arr);
+  const nonce   = Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+  const ctx     = (actionInfo && actionInfo.context) || piUUID || '';
+  const stateParam = nonce + '.' + encodeURIComponent(ctx);
+
+  const authUrl = 'https://id.twitch.tv/oauth2/authorize?' + new URLSearchParams({
+    client_id:     TWITCH_CLIENT_ID,
+    redirect_uri:  TWITCH_REDIRECT,
+    response_type: 'code',
+    scope:         'user:read:follows',
+    state:         stateParam,
+    force_verify:  'false'
+  }).toString();
+
+  // Open the browser — the persistent server is already listening at plugin load.
+  sendJSON({ event: "openUrl", payload: { url: authUrl } });
+  showAuthState('pending');
+});
+
+btnCancelAuth.addEventListener("click", () => {
+  showAuthState('unauth');
+  sendPlugin({ cmd: "cancelAuth" });
+});
+
+btnDisconnect.addEventListener("click", () => {
+  showAuthState('unauth');
+  sendPlugin({ cmd: "clearAuth" });
+});
+
+const actionBrowser       = document.getElementById("action-browser");
+const actionStreamlink    = document.getElementById("action-streamlink");
+const streamlinkPathField = document.getElementById("streamlink-path-field");
+const inpStreamlinkPath   = document.getElementById("inp-streamlink-path");
+
+function updateActionUI() {
+  if (actionStreamlink.checked) {
+    streamlinkPathField.classList.add("visible");
+  } else {
+    streamlinkPathField.classList.remove("visible");
+  }
+}
+
+document.querySelectorAll('input[name="btn-action"]').forEach(r =>
+  r.addEventListener("change", updateActionUI)
+);
+
+const chkAlertEnabled  = document.getElementById("chk-alert-enabled");
+const soundConfig      = document.getElementById("sound-config");
+const btnBrowse        = document.getElementById("btn-browse");
+const fileInput        = document.getElementById("file-input");
+const soundNameDisplay = document.getElementById("sound-name-display");
+const inpVolume        = document.getElementById("inp-volume");
+const volumeVal        = document.getElementById("volume-val");
+const btnPreview       = document.getElementById("btn-preview");
+
+// ── Sound section enable/disable ─────────────
+
+function updateSoundConfig() {
+  if (chkAlertEnabled.checked) {
+    soundConfig.classList.remove("disabled");
+  } else {
+    soundConfig.classList.add("disabled");
+  }
+}
+
+chkAlertEnabled.addEventListener("change", updateSoundConfig);
+
+// ── Volume slider ─────────────────────────────
+
+inpVolume.addEventListener("input", () => {
+  volumeVal.textContent = inpVolume.value + "%";
+});
+
+// ── File picker ───────────────────────────────
+
+// Clicking the styled button triggers the hidden real input
+btnBrowse.addEventListener("click", () => fileInput.click());
+
+fileInput.addEventListener("change", () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+
+  // Validate file type
+  if (!file.name.toLowerCase().endsWith(".mp3") && file.type !== "audio/mpeg") {
+    soundNameDisplay.textContent = "⚠ Only .mp3 files supported";
+    soundNameDisplay.classList.remove("has-file");
+    currentSoundData = null;
+    currentSoundName = "";
+    btnPreview.classList.remove("visible");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    currentSoundData = e.target.result; // data:audio/mpeg;base64,...
+    currentSoundName = file.name;
+
+    // Truncate long filenames for display
+    const displayName = file.name.length > 32
+      ? file.name.substring(0, 29) + "…"
+      : file.name;
+    soundNameDisplay.textContent = displayName;
+    soundNameDisplay.classList.add("has-file");
+    btnPreview.classList.add("visible");
+  };
+  reader.onerror = () => {
+    soundNameDisplay.textContent = "⚠ Failed to read file";
+    soundNameDisplay.classList.remove("has-file");
+    currentSoundData = null;
+    currentSoundName = "";
+    btnPreview.classList.remove("visible");
+  };
+  reader.readAsDataURL(file);
+});
+
+// ── Sound preview ─────────────────────────────
+
+btnPreview.addEventListener("click", () => {
+  if (!currentSoundData) return;
+  const vol = parseInt(inpVolume.value, 10) / 100;
+  playSound(currentSoundData, vol);
+});
+
+function playSound(dataUri, volume) {
+  try {
+    const audio = new Audio(dataUri);
+    audio.volume = Math.max(0, Math.min(1, volume));
+    audio.play().catch(e => console.error("Preview playback error:", e));
+  } catch (e) {
+    console.error("Preview error:", e);
+  }
+}
+
+// ── WS helpers ────────────────────────────────
+
+function sendJSON(obj) {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+}
+
+/** Send a command payload from the PI to the plugin backend.
+ * Falls back to piUUID as context if actionInfo is not yet populated
+ * (piUUID and the action context are the same value in Stream Deck / StreamDock). */
+function sendPlugin(payload) {
+  const ctx = (actionInfo && actionInfo.context) || piUUID;
+  const act = (actionInfo && actionInfo.action)  || 'com.dajax.twitchmonitorstreamlink.monitor';
+  if (!ctx) return false;
+  sendJSON({ action: act, event: "sendToPlugin", context: ctx, payload });
+  return true;
+}
+
+function setSpinner(on) {
+  pollStatus.innerHTML = on
+    ? '<span class="spinner"></span>Checking status...'
+    : '';
+}
+
+// ── Settings apply ────────────────────────────
+
+function applySettings(settings) {
+  cachedSettings = Object.assign({}, settings); // cache full settings to preserve auth tokens on save
+
+  inpUsername.value = settings.twitchUsername || "";
+
+  // Auth state — managed globally; do not read from per-button settings.
+  // (applyGlobalAuth is called via didReceiveGlobalSettings)
+
+  // Sound settings
+  chkAlertEnabled.checked = !!settings.alertEnabled;
+  inpVolume.value = (settings.alertVolume != null) ? settings.alertVolume : 80;
+  volumeVal.textContent = inpVolume.value + "%";
+  updateSoundConfig();
+
+  // Restore sound file reference (base64 stored in settings)
+  if (settings.alertSoundData && settings.alertSoundName) {
+    currentSoundData = settings.alertSoundData;
+    currentSoundName = settings.alertSoundName;
+    const displayName = settings.alertSoundName.length > 32
+      ? settings.alertSoundName.substring(0, 29) + "…"
+      : settings.alertSoundName;
+    soundNameDisplay.textContent = displayName;
+    soundNameDisplay.classList.add("has-file");
+    btnPreview.classList.add("visible");
+  } else {
+    currentSoundData = null;
+    currentSoundName = "";
+    soundNameDisplay.textContent = "No file selected";
+    soundNameDisplay.classList.remove("has-file");
+    btnPreview.classList.remove("visible");
+  }
+
+  // Button action
+  const action = settings.buttonAction || "browser";
+  actionBrowser.checked    = (action === "browser");
+  actionStreamlink.checked = (action === "streamlink");
+  inpStreamlinkPath.value  = settings.streamlinkPath || "";
+  updateActionUI();
+
+  if (settings.twitchUsername) {
+    statusName.textContent = settings.twitchUsername;
+    statusLabel.textContent = "Saved — checking live status…";
+    setSpinner(true);
+  } else {
+    statusName.textContent = "Not configured";
+    statusLabel.textContent = "Enter a username below";
+  }
+}
+
+// ── Status update from plugin ─────────────────
+
+function applyStatusUpdate(data) {
+  setSpinner(false);
+  if (data.displayName) statusName.textContent = data.displayName;
+  if (data.avatarUrl)   avatarImg.src = data.avatarUrl;
+
+  if (data.isLive === true) {
+    liveDot.classList.add("visible");
+    statusBadge.className = "badge live";
+    statusBadge.textContent = "● LIVE";
+    statusLabel.textContent = "Channel is live now!";
+    avatarImg.style.filter = "none";
+    avatarImg.style.borderColor = "#E91916";
+  } else if (data.isLive === false) {
+    liveDot.classList.remove("visible");
+    statusBadge.className = "badge offline";
+    statusBadge.textContent = "Offline";
+    statusLabel.textContent = "Not currently streaming";
+    avatarImg.style.filter = "grayscale(100%)";
+    avatarImg.style.borderColor = "#2a2a4a";
+  }
+
+  if (data.error) {
+    statusBadge.className = "badge unknown";
+    statusBadge.textContent = "Error";
+    statusLabel.textContent = data.error;
+  }
+}
+
+// ── Save ─────────────────────────────────────
+
+btnSave.addEventListener("click", () => {
+  // Merge into cachedSettings so auth tokens (stored globally) are never overwritten.
+  const settings = Object.assign({}, cachedSettings, {
+    twitchUsername:  inpUsername.value.trim().toLowerCase(),
+    alertEnabled:    chkAlertEnabled.checked,
+    alertVolume:     parseInt(inpVolume.value, 10),
+    alertSoundData:  (chkAlertEnabled.checked && currentSoundData) ? currentSoundData : null,
+    alertSoundName:  (chkAlertEnabled.checked && currentSoundName) ? currentSoundName : "",
+    buttonAction:    actionStreamlink.checked ? "streamlink" : "browser",
+    streamlinkPath:  inpStreamlinkPath.value.trim()
+  });
+
+  sendJSON({
+    event: "setSettings",
+    context: piUUID,
+    payload: settings
+  });
+
+  // Update UI preview
+  statusName.textContent = settings.twitchUsername || "Not configured";
+  if (settings.twitchUsername) {
+    statusLabel.textContent = "Saved — checking live status…";
+    setSpinner(true);
+    avatarImg.src = "data:image/svg+xml;charset=utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48'><circle cx='24' cy='24' r='24' fill='%23555'/><text x='24' y='32' text-anchor='middle' font-size='28' fill='%23aaa'>T</text></svg>";
+    avatarImg.style.filter = "";
+    avatarImg.style.borderColor = "";
+    liveDot.classList.remove("visible");
+    statusBadge.className = "badge unknown";
+    statusBadge.textContent = "—";
+  }
+});
+
+// ── Registration ──────────────────────────────
+
+function connectElgatoStreamDeckSocket(inPort, inPropertyInspectorUUID, inRegisterEvent, inInfo, inActionInfo) {
+  piUUID = inPropertyInspectorUUID;
+  actionInfo = typeof inActionInfo === "string" ? JSON.parse(inActionInfo) : inActionInfo;
+
+  ws = new WebSocket("ws://127.0.0.1:" + inPort);
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ event: inRegisterEvent, uuid: inPropertyInspectorUUID }));
+    sendJSON({ event: "getSettings", context: piUUID });
+    // Fetch the shared auth state (one Twitch account for all buttons).
+    sendJSON({ event: "getGlobalSettings", context: piUUID });
+  };
+
+  ws.onmessage = (event) => {
+    let msg;
+    try { msg = JSON.parse(event.data); } catch (e) { return; }
+
+    switch (msg.event) {
+      case "didReceiveGlobalSettings": {
+        const gs = (msg.payload && msg.payload.settings) || {};
+        if (gs.accessToken && gs.authedDisplayName) {
+          authUserName.textContent = gs.authedDisplayName;
+          if (gs.authedAvatarUrl) authAvatar.src = gs.authedAvatarUrl;
+          showAuthState('connected');
+        } else {
+          showAuthState('unauth');
+        }
+        break;
+      }
+      case "didReceiveSettings": {
+        const settings = (msg.payload && msg.payload.settings) || {};
+        applySettings(settings);
+        break;
+      }
+      case "sendToPropertyInspector": {
+        const data = msg.payload || {};
+        applyStatusUpdate(data);
+        // Handle auth status changes pushed from the plugin
+        if (data.authStatus === 'pending') {
+          showAuthState('pending');
+        } else if (data.authStatus === 'success') {
+          authUserName.textContent = data.authedDisplayName || '';
+          if (data.authedAvatarUrl) authAvatar.src = data.authedAvatarUrl;
+          showAuthState('connected');
+        } else if (data.authStatus === 'error' || data.authStatus === 'timeout') {
+          showAuthState('unauth');
+        } else if (data.authStatus === 'expired' || data.authStatus === 'cleared') {
+          showAuthState('unauth');
+        }
+        break;
+      }
+    }
+  };
+}
+</script>
+</body>
+</html>

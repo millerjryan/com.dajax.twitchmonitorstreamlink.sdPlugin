@@ -1,0 +1,10 @@
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\release\deps\bitstream_io-b1377ca38de97cea.d: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\huffman.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\read.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\write.rs
+
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\release\deps\libbitstream_io-b1377ca38de97cea.rlib: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\huffman.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\read.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\write.rs
+
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\release\deps\libbitstream_io-b1377ca38de97cea.rmeta: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\huffman.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\read.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\write.rs
+
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\lib.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\huffman.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\read.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\bitstream-io-4.10.0\src\write.rs:

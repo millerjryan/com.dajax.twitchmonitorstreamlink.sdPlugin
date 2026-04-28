@@ -1,0 +1,75 @@
+{
+  "Actions": [
+    {
+      "UUID": "com.dajax.twitchmonitorstreamlink.monitor",
+      "Icon": "images/action_icon",
+      "Name": "Twitch Monitor",
+      "Tooltip": "Monitor a Twitch channel's live status. Shows channel avatar in color when live, greyscale when offline.",
+      "state": 0,
+      "States": [
+        {
+          "Image": "images/key_offline",
+          "Title": "",
+          "ShowTitle": false
+        }
+      ],
+      "Settings": {
+        "twitchUsername": "",
+        "alertEnabled": false,
+        "alertSoundData": null,
+        "alertSoundName": "",
+        "alertVolume": 80,
+        "buttonAction": "browser",
+        "streamlinkPath": ""
+      },
+      "UserTitleEnabled": false,
+      "SupportedInMultiActions": false,
+      "Controllers": ["Keypad"],
+      "PropertyInspectorPath": "property_inspector.html"
+    },
+    {
+      "UUID": "com.dajax.twitchmonitorstreamlink.followslive",
+      "Icon": "images/action_icon",
+      "Name": "Follows Live Counter",
+      "Tooltip": "Shows how many channels you follow are currently live on Twitch. Click to switch to a configured StreamDock profile.",
+      "States": [
+        {
+          "Image": "images/key_offline",
+          "Title": "",
+          "ShowTitle": false
+        }
+      ],
+      "Settings": {
+        "targetProfile": ""
+      },
+      "UserTitleEnabled": false,
+      "SupportedInMultiActions": false,
+      "Controllers": ["Keypad"],
+      "PropertyInspectorPath": "property_inspector_follows.html"
+    }
+  ],
+  "Version": "1.0.1",
+  "Name": "Twitch Monitor - Rust",
+  "Icon": "images/icon",
+  "CategoryIcon": "images/action_icon",
+  "Category": "Streaming - Rust",
+  "Description": "Monitor a Twitch channel's live status. The button displays the channel's profile picture — full color when live, greyscale when offline. Configure with your Twitch API credentials.",
+  "CodePathWin": "plugin.bat",
+  "CodePathMac": "plugin.sh",
+  "SDKVersion": 1,
+  "Author": "dajax",
+  "URL": "https://github.com/dajax/twitch-monitor-streamdock",
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "10.11"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "7"
+    }
+  ],
+  "Software": {
+    "MinimumVersion": "2.10.179.426"
+  }
+}

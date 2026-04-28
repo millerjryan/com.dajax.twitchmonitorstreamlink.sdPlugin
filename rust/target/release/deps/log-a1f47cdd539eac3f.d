@@ -1,0 +1,10 @@
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\release\deps\log-a1f47cdd539eac3f.d: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\macros.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\serde.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\__private_api.rs
+
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\release\deps\liblog-a1f47cdd539eac3f.rlib: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\macros.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\serde.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\__private_api.rs
+
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\release\deps\liblog-a1f47cdd539eac3f.rmeta: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\macros.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\serde.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\__private_api.rs
+
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\lib.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\macros.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\serde.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\log-0.4.29\src\__private_api.rs:

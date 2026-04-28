@@ -1,0 +1,1 @@
+cargo:rustc-env=MIME_TYPES_GENERATED_PATH=C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\debug\build\mime_guess-fd34dfadc1ac08e7\out\mime_types_generated.rs

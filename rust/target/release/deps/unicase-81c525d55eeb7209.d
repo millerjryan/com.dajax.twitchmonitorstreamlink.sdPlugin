@@ -1,0 +1,10 @@
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\release\deps\unicase-81c525d55eeb7209.d: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\ascii.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\mod.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\map.rs
+
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\release\deps\libunicase-81c525d55eeb7209.rlib: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\ascii.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\mod.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\map.rs
+
+C:\Users\JoshuaMiller\.git\Workspace\com.dajax.twitchmonitorstreamlink.sdPlugin\rust\target\release\deps\libunicase-81c525d55eeb7209.rmeta: C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\lib.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\ascii.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\mod.rs C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\map.rs
+
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\lib.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\ascii.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\mod.rs:
+C:\Users\JoshuaMiller\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\unicase-2.9.0\src\unicode\map.rs:

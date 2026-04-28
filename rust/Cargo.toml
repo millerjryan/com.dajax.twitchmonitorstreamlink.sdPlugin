@@ -1,0 +1,29 @@
+[package]
+name = "twitch-monitor-plugin"
+version = "1.0.1"
+edition = "2021"
+
+[[bin]]
+name = "twitchmonitor-plugin"
+path = "src/main.rs"
+
+[dependencies]
+tokio          = { version = "1", features = ["full"] }
+tokio-tungstenite = { version = "0.24", features = ["native-tls"] }
+tungstenite    = "0.24"
+futures-util   = "0.3"
+serde          = { version = "1", features = ["derive"] }
+serde_json     = "1"
+reqwest        = { version = "0.12", features = ["json", "multipart"] }
+image          = "0.25"
+base64         = "0.22"
+rand           = "0.8"
+ab_glyph       = "0.2"
+url            = "2"
+
+# Audio playback — platform-specific handled at runtime via subprocess
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = true

@@ -1,0 +1,375 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Follows Live Counter Settings</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --purple:     #9146FF;
+      --purple-dk:  #6A30CC;
+      --purple-lt:  #BF94FF;
+      --live-red:   #E91916;
+      --bg:         #1a1a2e;
+      --surface:    #16213e;
+      --surface2:   #0f3460;
+      --text:       #e8e8f0;
+      --text-muted: #8888a8;
+      --border:     #2a2a4a;
+      --input-bg:   #0d1b2a;
+      --success:    #00d4aa;
+      --error:      #ff4757;
+      --radius:     8px;
+    }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 14px;
+      font-size: 13px;
+      min-width: 220px;
+    }
+
+    /* â”€â”€ Header â”€â”€ */
+    .header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px; padding-bottom: 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .logo {
+      width: 36px; height: 36px; background: var(--purple);
+      border-radius: 50%; display: flex; align-items: center;
+      justify-content: center; font-size: 20px; flex-shrink: 0;
+      box-shadow: 0 0 12px rgba(145,70,255,0.4);
+    }
+    .header-text h1 { font-size: 14px; font-weight: 700; color: var(--purple-lt); letter-spacing: 0.02em; }
+    .header-text p  { font-size: 11px; color: var(--text-muted); margin-top: 1px; }
+
+    /* â”€â”€ Form sections â”€â”€ */
+    .form-section { margin-bottom: 14px; }
+    .section-title {
+      font-size: 10px; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.1em;
+      color: var(--text-muted); margin-bottom: 8px;
+    }
+    .field { margin-bottom: 10px; }
+    label  { display: block; font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px; }
+
+    input[type="text"] {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 5px; color: var(--text);
+      padding: 7px 10px; font-size: 12px;
+      font-family: inherit; outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus { border-color: var(--purple); box-shadow: 0 0 0 2px rgba(145,70,255,0.2); }
+    input::placeholder { color: var(--text-muted); opacity: 0.6; }
+
+    /* â”€â”€ Count display â”€â”€ */
+    .count-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 14px;
+      margin-bottom: 14px; text-align: center;
+    }
+    .count-number { font-size: 42px; font-weight: 900; color: var(--purple-lt); line-height: 1; }
+    .count-number.live { color: var(--live-red); }
+    .count-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; letter-spacing: 0.05em; text-transform: uppercase; }
+
+    /* â”€â”€ Auth â”€â”€ */
+    .auth-hint { font-size: 11px; color: var(--text-muted); margin-bottom: 10px; line-height: 1.5; }
+    .btn-connect {
+      width: 100%; background: var(--purple); color: #fff;
+      border: none; border-radius: var(--radius); padding: 8px 12px;
+      font-size: 12px; font-weight: 700; cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      transition: background 0.15s;
+    }
+    .btn-connect:hover { background: var(--purple-dk); }
+    .auth-pending-row {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 11px; color: var(--text-muted); margin-bottom: 8px;
+    }
+    .btn-cancel-auth {
+      width: 100%; background: transparent; color: var(--text-muted);
+      border: 1px solid var(--border); border-radius: 5px;
+      padding: 5px; font-size: 11px; cursor: pointer; font-family: inherit;
+    }
+    .btn-cancel-auth:hover { border-color: var(--error); color: var(--error); }
+    .auth-user-row { display: flex; align-items: center; gap: 10px; }
+    #auth-avatar {
+      width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
+      border: 2px solid var(--purple); flex-shrink: 0;
+    }
+    .auth-user-info { flex: 1; min-width: 0; }
+    .auth-user-name { font-weight: 700; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .auth-connected-tag { font-size: 10px; color: var(--success); margin-top: 2px; }
+    .btn-disconnect {
+      background: transparent; color: var(--error);
+      border: 1px solid var(--error); border-radius: 5px;
+      padding: 4px 8px; font-size: 10px; font-weight: 600;
+      cursor: pointer; font-family: inherit; flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .btn-disconnect:hover { background: rgba(255,71,87,0.12); }
+
+    /* â”€â”€ Spinner â”€â”€ */
+    .spinner {
+      display: inline-block; width: 10px; height: 10px;
+      border: 2px solid rgba(145,70,255,0.3); border-top-color: var(--purple);
+      border-radius: 50%; animation: spin 0.8s linear infinite;
+      vertical-align: middle; margin-right: 4px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* â”€â”€ Divider â”€â”€ */
+    .divider { height: 1px; background: var(--border); margin: 14px 0; }
+
+    /* â”€â”€ Save button â”€â”€ */
+    .btn-save {
+      width: 100%; background: var(--purple); color: #fff;
+      border: none; border-radius: var(--radius); padding: 9px;
+      font-size: 13px; font-weight: 700; cursor: pointer;
+      transition: background 0.15s, transform 0.1s; font-family: inherit;
+    }
+    .btn-save:hover   { background: var(--purple-dk); }
+    .btn-save:active  { transform: scale(0.98); }
+
+    /* â”€â”€ Info box â”€â”€ */
+    .info-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-left: 3px solid var(--purple); border-radius: var(--radius);
+      padding: 10px 12px; font-size: 11px; color: var(--text-muted);
+      line-height: 1.6; margin-top: 8px;
+    }
+    .info-box strong { color: var(--purple-lt); display: block; margin-bottom: 3px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">ðŸ“º</div>
+    <div class="header-text">
+      <h1>Follows Live Counter</h1>
+      <p>Live channels you follow</p>
+    </div>
+  </div>
+
+  <!-- Live count display -->
+  <div id="count-section" style="display:none">
+    <div class="count-card">
+      <div class="count-number" id="count-number">â€”</div>
+      <div class="count-label" id="count-label">channels you follow are live</div>
+    </div>
+    <div class="divider"></div>
+  </div>
+
+  <!-- Twitch Account -->
+  <div class="form-section">
+    <div class="section-title">Twitch Account</div>
+
+    <div id="auth-unauth">
+      <p class="auth-hint">Connect your Twitch account to count how many channels you follow are currently live.</p>
+      <button class="btn-connect" id="btn-connect">ðŸ”—&nbsp; Connect with Twitch</button>
+    </div>
+
+    <div id="auth-pending" style="display:none">
+      <div class="auth-pending-row"><span class="spinner"></span>Waiting for Twitch authorizationâ€¦</div>
+      <button class="btn-cancel-auth" id="btn-cancel-auth">Cancel</button>
+    </div>
+
+    <div id="auth-connected" style="display:none">
+      <div class="auth-user-row">
+        <img id="auth-avatar" src="" alt=""/>
+        <div class="auth-user-info">
+          <div class="auth-user-name" id="auth-user-name"></div>
+          <div class="auth-connected-tag">âœ“ Connected</div>
+        </div>
+        <button class="btn-disconnect" id="btn-disconnect">Disconnect</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Profile / scene target -->
+  <div class="form-section">
+    <div class="section-title">On Click â€” Switch Profile</div>
+    <div class="field">
+      <label for="inp-profile">Target StreamDock Profile Name</label>
+      <input type="text" id="inp-profile" placeholder="e.g. Gaming" autocomplete="off" spellcheck="false"/>
+    </div>
+    <div class="info-box">
+      <strong>How to find your profile name</strong>
+      In StreamDock, open the profile switcher (top-right dropdown). The name shown there is the exact string to enter above. Leave blank to disable scene switching.
+    </div>
+  </div>
+
+  <button class="btn-save" id="btn-save">ðŸ’¾ Save Settings</button>
+
+<script>
+'use strict';
+
+let ws         = null;
+let piUUID     = null;
+let actionInfo = null;
+let cachedSettings = {};
+
+const inpProfile       = document.getElementById('inp-profile');
+const btnSave          = document.getElementById('btn-save');
+const authUnauth       = document.getElementById('auth-unauth');
+const authPending      = document.getElementById('auth-pending');
+const authConnected    = document.getElementById('auth-connected');
+const btnConnect       = document.getElementById('btn-connect');
+const btnCancelAuth    = document.getElementById('btn-cancel-auth');
+const btnDisconnect    = document.getElementById('btn-disconnect');
+const authAvatar       = document.getElementById('auth-avatar');
+const authUserName     = document.getElementById('auth-user-name');
+const countSection     = document.getElementById('count-section');
+const countNumber      = document.getElementById('count-number');
+const countLabel       = document.getElementById('count-label');
+
+const TWITCH_CLIENT_ID = 'wq0kudroby7abstyx6ihak1suxog1r';
+const TWITCH_REDIRECT  = 'http://localhost:7878';
+
+// â”€â”€ Auth UI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function showAuthState(state) {
+  authUnauth.style.display    = state === 'unauth'    ? '' : 'none';
+  authPending.style.display   = state === 'pending'   ? '' : 'none';
+  authConnected.style.display = state === 'connected' ? '' : 'none';
+}
+
+btnConnect.addEventListener('click', () => {
+  const arr = new Uint8Array(16);
+  window.crypto.getRandomValues(arr);
+  const nonce      = Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+  const ctx        = (actionInfo && actionInfo.context) || piUUID || '';
+  const stateParam = nonce + '.' + encodeURIComponent(ctx);
+
+  const authUrl = 'https://id.twitch.tv/oauth2/authorize?' + new URLSearchParams({
+    client_id:     TWITCH_CLIENT_ID,
+    redirect_uri:  TWITCH_REDIRECT,
+    response_type: 'code',
+    scope:         'user:read:follows',
+    state:         stateParam,
+    force_verify:  'false'
+  }).toString();
+
+  sendJSON({ event: 'openUrl', payload: { url: authUrl } });
+  showAuthState('pending');
+});
+
+btnCancelAuth.addEventListener('click', () => {
+  showAuthState('unauth');
+  sendPlugin({ cmd: 'cancelAuth' });
+});
+
+btnDisconnect.addEventListener('click', () => {
+  showAuthState('unauth');
+  sendPlugin({ cmd: 'clearAuth' });
+});
+
+// â”€â”€ Count display â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function applyLiveCount(count) {
+  if (count == null) { countSection.style.display = 'none'; return; }
+  countSection.style.display = '';
+  countNumber.textContent  = count;
+  countNumber.className    = 'count-number' + (count > 0 ? ' live' : '');
+  countLabel.textContent   = count === 1 ? 'channel you follow is live' : 'channels you follow are live';
+}
+
+// â”€â”€ Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function applySettings(settings) {
+  cachedSettings   = Object.assign({}, settings);
+  inpProfile.value = settings.targetProfile || '';
+}
+
+function applyGlobalAuth(gs) {
+  if (gs && gs.accessToken && gs.authedDisplayName) {
+    if (gs.authedAvatarUrl) authAvatar.src = gs.authedAvatarUrl;
+    authUserName.textContent = gs.authedDisplayName;
+    showAuthState('connected');
+  } else {
+    showAuthState('unauth');
+  }
+}
+
+// â”€â”€ WS helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function sendJSON(obj) {
+  if (ws && ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify(obj));
+}
+
+function sendPlugin(payload) {
+  const ctx = (actionInfo && actionInfo.context) || piUUID;
+  const act = (actionInfo && actionInfo.action) || 'com.dajax.twitchmonitorstreamlink.followslive';
+  if (!ctx) return false;
+  sendJSON({ action: act, event: 'sendToPlugin', context: ctx, payload });
+  return true;
+}
+
+// â”€â”€ Save â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+btnSave.addEventListener('click', () => {
+  const settings = Object.assign({}, cachedSettings, {
+    targetProfile: inpProfile.value.trim()
+  });
+  sendJSON({ event: 'setSettings', context: piUUID, payload: settings });
+  cachedSettings = settings;
+});
+
+// â”€â”€ Registration â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+function connectElgatoStreamDeckSocket(inPort, inPropertyInspectorUUID, inRegisterEvent, inInfo, inActionInfo) {
+  piUUID     = inPropertyInspectorUUID;
+  actionInfo = typeof inActionInfo === 'string' ? JSON.parse(inActionInfo) : inActionInfo;
+
+  ws = new WebSocket('ws://127.0.0.1:' + inPort);
+
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ event: inRegisterEvent, uuid: inPropertyInspectorUUID }));
+    sendJSON({ event: 'getSettings',       context: piUUID });
+    sendJSON({ event: 'getGlobalSettings', context: piUUID });
+  };
+
+  ws.onmessage = (event) => {
+    let msg;
+    try { msg = JSON.parse(event.data); } catch (e) { return; }
+
+    switch (msg.event) {
+      case 'didReceiveGlobalSettings': {
+        const gs = (msg.payload && msg.payload.settings) || {};
+        applyGlobalAuth(gs);
+        break;
+      }
+      case 'didReceiveSettings': {
+        applySettings((msg.payload && msg.payload.settings) || {});
+        break;
+      }
+      case 'sendToPropertyInspector': {
+        const data = msg.payload || {};
+        if (data.followsLiveCount != null) applyLiveCount(data.followsLiveCount);
+        if (data.authStatus === 'success') {
+          applyGlobalAuth({ accessToken: 'ok', authedDisplayName: data.authedDisplayName, authedAvatarUrl: data.authedAvatarUrl });
+        } else if (data.authStatus === 'scope_error') {
+          showAuthState('unauth');
+          applyLiveCount(null);
+        } else if (data.authStatus === 'error' || data.authStatus === 'expired' || data.authStatus === 'cleared') {
+          showAuthState('unauth');
+          applyLiveCount(null);
+        }
+        break;
+      }
+    }
+  };
+}
+</script>
+</body>
+</html>
