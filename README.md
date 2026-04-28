@@ -176,7 +176,47 @@ com.dajax.twitchmonitorstreamlink.sdPlugin/
 
 ---
 
-## Twitch API Setup
+## GitHub Actions — Automated Releases
+
+Pushing a tag matching `v*` triggers the release workflow (`.github/workflows/release.yml`), which compiles the binary and publishes a GitHub Release with the packaged zip attached.
+
+### Current state
+
+| Target | Status |
+|---|---|
+| `win-x64` (Windows x86-64) | ✅ Enabled |
+| `mac-x64` (macOS Intel) | ⏸ Disabled (see below) |
+| `mac-arm64` (macOS Apple Silicon) | ⏸ Disabled (see below) |
+
+### Re-enabling macOS builds
+
+The macOS matrix entries and packaging steps are commented out in the workflow file. To re-enable them:
+
+1. Open `.github/workflows/release.yml`
+2. Uncomment the two macOS matrix entries under `jobs.build.strategy.matrix.include`:
+
+```yaml
+- target:       mac-x64
+  os:           macos-13
+  cargo_target: x86_64-apple-darwin
+  binary:       twitchmonitor-plugin
+
+- target:       mac-arm64
+  os:           macos-14
+  cargo_target: aarch64-apple-darwin
+  binary:       twitchmonitor-plugin
+```
+
+3. Uncomment the `mkdir`, `cp`, and `chmod` lines for `mac-x64` and `mac-arm64` in the `release` job's **Assemble plugin directory** step.
+
+> **Note:** macOS GitHub-hosted runners (`macos-13`, `macos-14`) are drawn from a much smaller shared pool than Windows or Linux runners. Jobs may wait 5–15 minutes in the queue during peak hours before a machine becomes available — this is expected behaviour.
+
+### Cross-compiling macOS binaries on Windows (alternative)
+
+If macOS runner wait times are a concern, it is possible to cross-compile macOS targets from a Linux runner using `cargo-zigbuild` and the Zig toolchain. This requires additional workflow configuration and is not currently set up.
+
+---
+
 
 The plugin communicates with the Twitch Helix API using an embedded Client ID and secret (XOR-obfuscated at compile time). OAuth authorisation is performed through the property inspector UI — click **Authorise with Twitch** and follow the browser prompt. The redirect lands on a local callback server on port **7878**.
 
