@@ -187,3 +187,8 @@ Tokens are stored in the plugin's global settings via the StreamDock SDK and aut
 ## License
 
 Private / proprietary — all rights reserved.
+
+
+## Todo
+
+1. Finish the "Following Channels Live" button.  This will allow the user to switch to a profile that has more keypad Icons.

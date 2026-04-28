@@ -1,0 +1,128 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  # ── Compile the binary for each target platform ──────────────────────────
+  build:
+    name: Build (${{ matrix.target }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target:       win-x64
+            os:           windows-latest
+            cargo_target: x86_64-pc-windows-msvc
+            binary:       twitchmonitor-plugin.exe
+
+          - target:       mac-x64
+            os:           macos-13
+            cargo_target: x86_64-apple-darwin
+            binary:       twitchmonitor-plugin
+
+          - target:       mac-arm64
+            os:           macos-14
+            cargo_target: aarch64-apple-darwin
+            binary:       twitchmonitor-plugin
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.cargo_target }}
+
+      - name: Cache Cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            rust/target
+          key: ${{ matrix.target }}-cargo-${{ hashFiles('rust/Cargo.lock') }}
+          restore-keys: ${{ matrix.target }}-cargo-
+
+      - name: Build release binary
+        working-directory: rust
+        run: cargo build --release --target ${{ matrix.cargo_target }}
+
+      - name: Upload binary artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: binary-${{ matrix.target }}
+          path: rust/target/${{ matrix.cargo_target }}/release/${{ matrix.binary }}
+          if-no-files-found: error
+
+  # ── Assemble zip and publish a GitHub Release ────────────────────────────
+  release:
+    name: Package & Release
+    needs: build
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write   # required to create a GitHub Release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all binaries
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts/
+
+      - name: Assemble plugin directory
+        run: |
+          PLUGIN="com.dajax.twitchmonitorstreamlink.sdPlugin"
+
+          mkdir -p "$PLUGIN/images"
+          mkdir -p "$PLUGIN/bin/win-x64"
+          mkdir -p "$PLUGIN/bin/mac-x64"
+          mkdir -p "$PLUGIN/bin/mac-arm64"
+
+          # Core plugin files
+          cp manifest.json \
+             plugin.bat \
+             plugin.sh \
+             property_inspector.html \
+             property_inspector_follows.html \
+             airplane-ding-dong.mp3 \
+             "$PLUGIN/"
+
+          # Images
+          cp images/* "$PLUGIN/images/"
+
+          # Binaries
+          cp artifacts/binary-win-x64/twitchmonitor-plugin.exe \
+             "$PLUGIN/bin/win-x64/twitchmonitor-plugin.exe"
+
+          cp artifacts/binary-mac-x64/twitchmonitor-plugin \
+             "$PLUGIN/bin/mac-x64/twitchmonitor-plugin"
+
+          cp artifacts/binary-mac-arm64/twitchmonitor-plugin \
+             "$PLUGIN/bin/mac-arm64/twitchmonitor-plugin"
+
+          # Ensure macOS binaries are executable inside the zip
+          chmod +x "$PLUGIN/bin/mac-x64/twitchmonitor-plugin"
+          chmod +x "$PLUGIN/bin/mac-arm64/twitchmonitor-plugin"
+
+      - name: Create zip
+        run: |
+          ZIP="com.dajax.twitchmonitorstreamlink.sdPlugin.zip"
+          zip -r "$ZIP" "com.dajax.twitchmonitorstreamlink.sdPlugin/"
+          echo "ZIP=$ZIP" >> "$GITHUB_ENV"
+          echo "SIZE=$(du -sh $ZIP | cut -f1)" >> "$GITHUB_ENV"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          generate_release_notes: true
+          files: ${{ env.ZIP }}
