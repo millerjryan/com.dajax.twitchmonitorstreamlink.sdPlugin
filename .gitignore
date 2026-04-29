@@ -1,0 +1,8 @@
+# Compiled plugin binaries
+bin/
+
+# Rust build artifacts
+rust/target/
+
+# Plugin distribution zip
+*.zip

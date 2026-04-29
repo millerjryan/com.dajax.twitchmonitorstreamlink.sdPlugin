@@ -1,6 +1,6 @@
 [package]
 name = "twitch-monitor-plugin"
-version = "1.0.1"
+version = "1.1.0"
 edition = "2021"
 
 [[bin]]
@@ -20,8 +20,7 @@ base64         = "0.22"
 rand           = "0.8"
 ab_glyph       = "0.2"
 url            = "2"
-
-# Audio playback — platform-specific handled at runtime via subprocess
+rodio          = "0.17"
 
 [profile.release]
 opt-level = "z"
