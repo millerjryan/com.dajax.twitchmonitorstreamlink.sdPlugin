@@ -375,10 +375,14 @@ async fn poll_monitor(app: AppHandle, context: String) {
             }
         };
         if alert_enabled {
+            let vol = volume as f32 / 100.0;
             if let Some(data) = sound_data {
-                let vol = volume as f32 / 100.0;
                 tokio::task::spawn_local(async move {
                     audio::play_base64_mp3(&data, vol).await;
+                });
+            } else if let Some(fallback) = audio::find_bundled_sound() {
+                tokio::task::spawn_local(async move {
+                    audio::play_file(&fallback, vol).await;
                 });
             }
         }
@@ -406,9 +410,17 @@ async fn poll_monitor(app: AppHandle, context: String) {
 
         let mut ctxs = app.contexts.write().await;
         if let Some(state) = ctxs.get_mut(&context) {
-            state.is_live      = Some(is_live);
             state.viewer_count = viewer_count;
             state.has_image    = true;
+        }
+    }
+
+    // Always persist the live state so the alert condition fires correctly
+    // on the next offline→live transition regardless of image-rebuild path.
+    {
+        let mut ctxs = app.contexts.write().await;
+        if let Some(state) = ctxs.get_mut(&context) {
+            state.is_live = Some(is_live);
         }
     }
 
