@@ -36,6 +36,20 @@ struct StreamEntry {
     viewer_count: u32,
 }
 
+/// A live stream entry returned by the followed-streams endpoint (includes user metadata).
+#[derive(Deserialize, Clone)]
+pub struct LiveStream {
+    pub user_id:      String,
+    pub user_login:   String,
+    pub user_name:    String,
+    pub viewer_count: u32,
+}
+
+#[derive(Deserialize)]
+struct FollowedStreamsPage {
+    data: Vec<LiveStream>,
+}
+
 #[derive(Deserialize)]
 struct TokenResponse {
     access_token:  String,
@@ -148,6 +162,37 @@ pub async fn get_followed_live_count(token: &str, user_id: &str) -> Result<u32, 
         if cursor.is_none() || total >= 500 { break; }
     }
     Ok(total)
+}
+
+/// Return up to 100 live followed streams for `user_id`, sorted by viewer count descending.
+pub async fn get_followed_live_streams(token: &str, user_id: &str) -> Result<Vec<LiveStream>, String> {
+    let cid = crate::client_id();
+    let url = format!(
+        "https://api.twitch.tv/helix/streams/followed?user_id={}&first=100",
+        user_id
+    );
+    let resp = http_client()
+        .get(&url)
+        .header("Client-ID", &cid)
+        .header("Authorization", format!("Bearer {}", token))
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let body_text = resp.text().await.unwrap_or_default().to_lowercase();
+        if status.as_u16() == 401 {
+            if body_text.contains("scope") {
+                return Err("SCOPE_ERROR: user:read:follows scope required — please reconnect".to_string());
+            }
+            return Err(format!("401: followed streams lookup failed: {status}"));
+        }
+        return Err(format!("Followed streams lookup failed: {status}"));
+    }
+
+    let body: FollowedStreamsPage = resp.json().await.map_err(|e| e.to_string())?;
+    Ok(body.data)
 }
 
 /// Refresh the OAuth access token stored in GlobalSettings.

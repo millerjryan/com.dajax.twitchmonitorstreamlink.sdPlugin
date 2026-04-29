@@ -22,6 +22,25 @@ A [StreamDock](https://www.ajazz.com/pages/streamdock) / [OpenDeck](https://gith
 - **Press the button to instantly switch to any configured device profile** — enter the profile name in the property inspector settings
 - Profile switching is compatible with OpenDeck, StreamDock, and Elgato Stream Deck software
 
+### Live Channel by Index (keypad action)
+- Displays the **Nth live channel** from your followed channels list, ordered by current viewer count (highest first)
+- Index 1 = most-watched live channel you follow, index 2 = second most-watched, and so on
+- When a channel occupies the slot the button shows the **full-colour avatar**, **LIVE badge**, and **viewer count** — identical to the Twitch Monitor action
+- When no live channel exists at the configured index the button displays a **solid black screen**
+- Optional alert sound plays whenever a new channel appears in the slot
+- Button click action: **open in browser** or **launch via Streamlink**
+
+#### Recommended setup — a dedicated "Live Follows" profile
+
+The most effective way to use this action is to dedicate an entire device profile to your live follows list:
+
+1. **Create a new profile** in your StreamDock / Stream Deck software (e.g. name it `Live Follows`).
+2. **Add a Follows Live Counter button** to your main profile and set its *On Click — Switch Profile* value to `Live Follows`. Pressing it will jump straight to the follows page.
+3. **Fill the `Live Follows` profile** with Live Channel by Index buttons — assign index **1** to the first button, **2** to the second, **3** to the third, and so on across every key.
+4. Each button will automatically track whichever channel currently holds that viewer-count rank among your live follows. Slots with no live channel stay black and do nothing when pressed.
+
+This gives you an at-a-glance live dashboard and lets you jump directly into any of your top followed streams with a single key press.
+
 ---
 
 ## Requirements
@@ -98,6 +117,7 @@ com.dajax.twitchmonitorstreamlink.sdPlugin/
   plugin.sh                         ← macOS launcher
   property_inspector.html
   property_inspector_follows.html
+  property_inspector_follows_index.html
   airplane-ding-dong.mp3
   images/
     action_icon.png
@@ -122,6 +142,7 @@ New-Item -ItemType Directory -Force "$stage\images", "$stage\bin\win-x64" | Out-
 
 Copy-Item "$root\manifest.json", "$root\plugin.bat", "$root\plugin.sh",
           "$root\property_inspector.html", "$root\property_inspector_follows.html",
+          "$root\property_inspector_follows_index.html",
           "$root\airplane-ding-dong.mp3" -Destination "$stage\"
 
 Copy-Item "$root\images\*"  "$stage\images\"
@@ -143,6 +164,7 @@ com.dajax.twitchmonitorstreamlink.sdPlugin/
   plugin.sh                         ← macOS entry point
   property_inspector.html           ← Settings UI for Twitch Monitor action
   property_inspector_follows.html   ← Settings UI for Follows Live Counter action
+  property_inspector_follows_index.html ← Settings UI for Live Channel by Index action
   airplane-ding-dong.mp3            ← Default alert sound
   images/                           ← Plugin and button icons
   bin/

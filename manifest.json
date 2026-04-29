@@ -28,6 +28,33 @@
       "PropertyInspectorPath": "property_inspector.html"
     },
     {
+      "UUID": "com.dajax.twitchmonitorstreamlink.followsindex",
+      "Icon": "images/action_icon",
+      "Name": "Live Channel by Index",
+      "Tooltip": "Displays the Nth live channel from your followed channels list (sorted by viewer count). Shows avatar when live, greyscale placeholder when the slot is empty.",
+      "state": 0,
+      "States": [
+        {
+          "Image": "images/key_offline",
+          "Title": "",
+          "ShowTitle": false
+        }
+      ],
+      "Settings": {
+        "followIndex": 1,
+        "alertEnabled": false,
+        "alertSoundData": null,
+        "alertSoundName": "",
+        "alertVolume": 80,
+        "buttonAction": "browser",
+        "streamlinkPath": ""
+      },
+      "UserTitleEnabled": false,
+      "SupportedInMultiActions": false,
+      "Controllers": ["Keypad"],
+      "PropertyInspectorPath": "property_inspector_follows_index.html"
+    },
+    {
       "UUID": "com.dajax.twitchmonitorstreamlink.followslive",
       "Icon": "images/action_icon",
       "Name": "Follows Live Counter",

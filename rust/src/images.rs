@@ -49,6 +49,12 @@ pub async fn avatar(url: &str, greyscale: bool) -> Result<PngB64, String> {
 
 // ── Placeholder ───────────────────────────────────────────────────────────
 
+/// Solid black 144×144 image — used when a slot has no live channel.
+pub async fn black_screen() -> Result<PngB64, String> {
+    let img = RgbaImage::from_pixel(144, 144, Rgba([0, 0, 0, 255]));
+    to_base64_png(&DynamicImage::ImageRgba8(img))
+}
+
 /// Circular placeholder: purple when live, grey when offline.
 pub async fn placeholder(is_live: bool) -> Result<PngB64, String> {
     let fill: Rgba<u8> = if is_live {
