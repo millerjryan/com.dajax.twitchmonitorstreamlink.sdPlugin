@@ -49,6 +49,12 @@ pub async fn avatar(url: &str, greyscale: bool) -> Result<PngB64, String> {
 
 // ── Placeholder ───────────────────────────────────────────────────────────
 
+/// Solid black 144×144 image — used when a slot has no live channel.
+pub async fn black_screen() -> Result<PngB64, String> {
+    let img = RgbaImage::from_pixel(144, 144, Rgba([0, 0, 0, 255]));
+    to_base64_png(&DynamicImage::ImageRgba8(img))
+}
+
 /// Circular placeholder: purple when live, grey when offline.
 pub async fn placeholder(is_live: bool) -> Result<PngB64, String> {
     let fill: Rgba<u8> = if is_live {
@@ -218,7 +224,7 @@ pub async fn follows_count_image(count: u32) -> Result<PngB64, String> {
 
     // Count number — centred, top half of the 72px image.
     let count_str = count.to_string();
-    draw_text_centered_ttf(&mut base, &count_str, 0, 72, 8, Rgba([0xFF, 0xFF, 0xFF, 0xFF]), 22.0);
+    draw_text_centered_ttf(&mut base, &count_str, 0, 72, 4, Rgba([0xFF, 0xFF, 0xFF, 0xFF]), 30.0);
 
     // "Live" label — centred, bottom half.
     let live_col: Rgba<u8> = if count > 0 {
@@ -226,7 +232,7 @@ pub async fn follows_count_image(count: u32) -> Result<PngB64, String> {
     } else {
         Rgba([0x88, 0x88, 0x88, 0xFF])
     };
-    draw_text_centered_ttf(&mut base, "Live", 0, 72, 46, live_col, 13.0);
+    draw_text_centered_ttf(&mut base, "Live", 0, 72, 40, live_col, 28.0);
 
     to_base64_png(&DynamicImage::ImageRgba8(base))
 }
