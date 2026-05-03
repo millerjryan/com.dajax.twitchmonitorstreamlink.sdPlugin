@@ -2,9 +2,9 @@
 
 A [StreamDock](https://www.ajazz.com/pages/streamdock) / [OpenDeck](https://github.com/nekename/OpenDeck) / Stream Deck plugin written in Rust that monitors Twitch channel live status directly on your keypad buttons.
 
-**Version:** 1.1.0  
+**Version:** 1.3.0  
 **Author:** dajax  
-**Platform:** Windows · macOS
+**Platform:** Windows · macOS · Linux
 
 ---
 
@@ -50,6 +50,7 @@ This gives you an at-a-glance live dashboard and lets you jump directly into any
 |---|---|
 | Windows | Windows 7 or later |
 | macOS | macOS 10.11 (El Capitan) or later |
+| Linux | Any modern x86-64 distribution |
 | StreamDock / Stream Deck software | v2.10.179.426 or later |
 | OpenDeck | Any recent version |
 
@@ -76,14 +77,14 @@ cargo build --release
 ```
 
 ```bash
-# macOS
+# macOS / Linux
 cd rust
 cargo build --release
 ```
 
 The compiled binary will be at:
 - **Windows:** `rust/target/release/twitchmonitor-plugin.exe`
-- **macOS:** `rust/target/release/twitchmonitor-plugin`
+- **macOS / Linux:** `rust/target/release/twitchmonitor-plugin`
 
 ### Deploy the binary
 
@@ -100,6 +101,10 @@ cp rust/target/release/twitchmonitor-plugin bin/mac-x64/
 
 # macOS — Apple Silicon
 cp rust/target/release/twitchmonitor-plugin bin/mac-arm64/
+
+# Linux — x86-64
+cp rust/target/release/twitchmonitor-plugin bin/linux-x64/
+chmod +x bin/linux-x64/twitchmonitor-plugin
 ```
 
 ---
@@ -114,7 +119,7 @@ Required zip contents:
 com.dajax.twitchmonitorstreamlink.sdPlugin/
   manifest.json
   plugin.bat                        ← Windows launcher
-  plugin.sh                         ← macOS launcher
+  plugin.sh                         ← macOS / Linux launcher
   property_inspector.html
   property_inspector_follows.html
   property_inspector_follows_index.html
@@ -129,6 +134,8 @@ com.dajax.twitchmonitorstreamlink.sdPlugin/
   bin/
     win-x64/
       twitchmonitor-plugin.exe
+    linux-x64/
+      twitchmonitor-plugin
 ```
 
 PowerShell packaging script (run from the repository root):
@@ -138,7 +145,7 @@ $root   = "."
 $stage  = "$root\_stage\com.dajax.twitchmonitorstreamlink.sdPlugin"
 $zipOut = "$root\com.dajax.twitchmonitorstreamlink.sdPlugin.zip"
 
-New-Item -ItemType Directory -Force "$stage\images", "$stage\bin\win-x64" | Out-Null
+New-Item -ItemType Directory -Force "$stage\images", "$stage\bin\win-x64", "$stage\bin\linux-x64" | Out-Null
 
 Copy-Item "$root\manifest.json", "$root\plugin.bat", "$root\plugin.sh",
           "$root\property_inspector.html", "$root\property_inspector_follows.html",
@@ -147,6 +154,8 @@ Copy-Item "$root\manifest.json", "$root\plugin.bat", "$root\plugin.sh",
 
 Copy-Item "$root\images\*"  "$stage\images\"
 Copy-Item "$root\rust\target\release\twitchmonitor-plugin.exe" "$stage\bin\win-x64\"
+# Linux binary (build on Linux or via cross-compilation):
+# Copy-Item "$root\rust\target\x86_64-unknown-linux-gnu\release\twitchmonitor-plugin" "$stage\bin\linux-x64\"
 
 Remove-Item $zipOut -ErrorAction SilentlyContinue
 Compress-Archive -Path "$root\_stage\*" -DestinationPath $zipOut
@@ -161,7 +170,7 @@ Remove-Item -Recurse -Force "$root\_stage"
 com.dajax.twitchmonitorstreamlink.sdPlugin/
   manifest.json                     ← StreamDock plugin manifest
   plugin.bat                        ← Windows entry point
-  plugin.sh                         ← macOS entry point
+  plugin.sh                         ← macOS / Linux entry point
   property_inspector.html           ← Settings UI for Twitch Monitor action
   property_inspector_follows.html   ← Settings UI for Follows Live Counter action
   property_inspector_follows_index.html ← Settings UI for Live Channel by Index action
@@ -169,6 +178,7 @@ com.dajax.twitchmonitorstreamlink.sdPlugin/
   images/                           ← Plugin and button icons
   bin/
     win-x64/                        ← Windows release binary (not in source control)
+    linux-x64/                      ← Linux x86-64 binary (not in source control)
     mac-x64/                        ← macOS Intel binary (not in source control)
     mac-arm64/                      ← macOS Apple Silicon binary (not in source control)
   rust/                             ← Rust source
@@ -212,6 +222,7 @@ Pushing a tag matching `v*` triggers the release workflow (`.github/workflows/re
 | Target | Status |
 |---|---|
 | `win-x64` (Windows x86-64) | ✅ Enabled |
+| `linux-x64` (Linux x86-64) | ✅ Enabled |
 | `mac-x64` (macOS Intel) | ⏸ Disabled (see below) |
 | `mac-arm64` (macOS Apple Silicon) | ⏸ Disabled (see below) |
 
