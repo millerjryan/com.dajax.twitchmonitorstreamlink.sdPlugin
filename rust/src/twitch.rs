@@ -240,7 +240,7 @@ pub async fn refresh_token(app: AppHandle) -> Result<String, String> {
 pub async fn exchange_code(
     app:          AppHandle,
     code:         &str,
-    context:      &str,
+    _context:     &str,
     redirect_uri: &str,
 ) -> Result<(), String> {
     let cid  = crate::client_id();
