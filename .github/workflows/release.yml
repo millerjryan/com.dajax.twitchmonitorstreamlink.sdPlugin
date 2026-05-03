@@ -45,6 +45,10 @@ jobs:
         with:
           targets: ${{ matrix.cargo_target }}
 
+      - name: Install ALSA dev headers (Linux only)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update -q && sudo apt-get install -y libasound2-dev
+
       - name: Cache Cargo registry & build
         uses: actions/cache@v4
         with:
