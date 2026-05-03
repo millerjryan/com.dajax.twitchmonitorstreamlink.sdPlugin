@@ -83,6 +83,7 @@
   "Description": "Monitor a Twitch channel's live status. The button displays the channel's profile picture — full color when live, greyscale when offline. Configure with your Twitch API credentials.",
   "CodePathWin": "plugin.bat",
   "CodePathMac": "plugin.sh",
+  "CodePathLinux": "plugin.sh",
   "SDKVersion": 1,
   "Author": "dajax",
   "URL": "https://github.com/dajax/twitch-monitor-streamdock",
@@ -94,6 +95,10 @@
     {
       "Platform": "windows",
       "MinimumVersion": "7"
+    },
+    {
+      "Platform": "linux",
+      "MinimumVersion": "1.0"
     }
   ],
   "Software": {

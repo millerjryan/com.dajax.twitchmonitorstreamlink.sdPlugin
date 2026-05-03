@@ -18,6 +18,11 @@ jobs:
             cargo_target: x86_64-pc-windows-msvc
             binary:       twitchmonitor-plugin.exe
 
+          - target:       linux-x64
+            os:           ubuntu-latest
+            cargo_target: x86_64-unknown-linux-gnu
+            binary:       twitchmonitor-plugin
+
           # macOS builds temporarily disabled — uncomment to re-enable
           # - target:       mac-x64
           #   os:           macos-13
@@ -85,6 +90,7 @@ jobs:
 
           mkdir -p "$PLUGIN/images"
           mkdir -p "$PLUGIN/bin/win-x64"
+          mkdir -p "$PLUGIN/bin/linux-x64"
           # mkdir -p "$PLUGIN/bin/mac-x64"
           # mkdir -p "$PLUGIN/bin/mac-arm64"
 
@@ -104,6 +110,10 @@ jobs:
           # Binaries
           cp artifacts/binary-win-x64/twitchmonitor-plugin.exe \
              "$PLUGIN/bin/win-x64/twitchmonitor-plugin.exe"
+
+          cp artifacts/binary-linux-x64/twitchmonitor-plugin \
+             "$PLUGIN/bin/linux-x64/twitchmonitor-plugin"
+          chmod +x "$PLUGIN/bin/linux-x64/twitchmonitor-plugin"
 
           # macOS binaries temporarily disabled
           # cp artifacts/binary-mac-x64/twitchmonitor-plugin \
