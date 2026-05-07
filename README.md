@@ -2,7 +2,7 @@
 
 A [StreamDock](https://www.ajazz.com/pages/streamdock) / [OpenDeck](https://github.com/nekename/OpenDeck) / Stream Deck plugin written in Rust that monitors Twitch channel live status directly on your keypad buttons.
 
-**Version:** 1.3.0  
+**Version:** 1.4.0  
 **Author:** dajax  
 **Platform:** Windows · macOS · Linux
 
@@ -16,6 +16,8 @@ A [StreamDock](https://www.ajazz.com/pages/streamdock) / [OpenDeck](https://gith
 - Shows a bold red **LIVE** badge at the bottom-right corner
 - Optional alert sound when a channel goes live (upload any MP3 in the property inspector)
 - Button click action: **open in browser** or **launch via Streamlink**
+  - When using Streamlink, choose your preferred player — **VLC** or **MPV** — directly in the property inspector
+  - A **"Starting Streamlink..."** dialog appears on screen while Streamlink is launching and automatically closes once the process has started
 
 ### Follows Live Counter (keypad action)
 - Displays how many channels you follow are currently live
@@ -29,6 +31,8 @@ A [StreamDock](https://www.ajazz.com/pages/streamdock) / [OpenDeck](https://gith
 - When no live channel exists at the configured index the button displays a **solid black screen**
 - Optional alert sound plays whenever a new channel appears in the slot
 - Button click action: **open in browser** or **launch via Streamlink**
+  - When using Streamlink, choose your preferred player — **VLC** or **MPV** — directly in the property inspector
+  - A **"Starting Streamlink..."** dialog appears on screen while Streamlink is launching and automatically closes once the process has started
 
 #### Recommended setup — a dedicated "Live Follows" profile
 
@@ -59,6 +63,8 @@ OpenDeck restricts the `switchProfile` WebSocket event to an internal allowlist 
 
 ### Streamlink (optional)
 If you want button clicks to open streams in [Streamlink](https://streamlink.github.io/) instead of a browser, install it and make sure `streamlink` is on your `PATH`, or provide the full path to the executable in the property inspector.
+
+You can also select which media player Streamlink should use — **VLC** or **MPV** — from a dropdown in the property inspector. The player must be installed and on your `PATH` (e.g. `vlc` or `mpv`).
 
 ---
 
@@ -193,6 +199,7 @@ com.dajax.twitchmonitorstreamlink.sdPlugin/
       twitch.rs                     ← Twitch Helix API client
       audio.rs                      ← Alert sound playback
       oauth.rs                      ← OAuth callback HTTP server
+      dialog.rs                     ← "Starting Streamlink..." launch dialog (Windows)
 ```
 
 ---
@@ -210,6 +217,7 @@ com.dajax.twitchmonitorstreamlink.sdPlugin/
 | `base64` | PNG image encoding for StreamDock `setImage` events |
 | `rand` | OAuth state nonce generation |
 | `url` | URL handling |
+| `winapi` | Native Windows dialog for Streamlink launch feedback (Windows only) |
 
 ---
 
