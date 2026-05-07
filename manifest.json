@@ -75,7 +75,7 @@
       "PropertyInspectorPath": "property_inspector_follows.html"
     }
   ],
-  "Version": "1.0.1",
+  "Version": "1.3.4",
   "Name": "Twitch Monitor - Rust",
   "Icon": "images/icon",
   "CategoryIcon": "images/action_icon",
