@@ -1,7 +1,10 @@
 /// Transient "Starting Streamlink..." dialog shown while the process is being spawned.
 ///
-/// Windows-only implementation using raw WinAPI. On non-Windows targets the type
-/// compiles as a no-op so call-sites need no cfg guards.
+/// - **Windows**: raw WinAPI popup window (native, no extra deps)
+/// - **Linux**: spawns `zenity --progress --pulsate` (falls back to `xmessage`)
+/// - **Other platforms**: no-op stub
+///
+/// Call-sites need no `cfg` guards — the public API is identical on every platform.
 
 // ── Windows implementation ─────────────────────────────────────────────────
 
@@ -161,9 +164,76 @@ mod imp {
     }
 }
 
-// ── Non-Windows stub ───────────────────────────────────────────────────────
+// ── Linux implementation ───────────────────────────────────────────────────
 
-#[cfg(not(windows))]
+#[cfg(target_os = "linux")]
+mod imp {
+    use std::process::{Child, Command, Stdio};
+    use std::sync::{Arc, Mutex};
+
+    pub struct StartingDialog {
+        child: Arc<Mutex<Option<Child>>>,
+        shown_at: std::time::Instant,
+    }
+
+    impl StartingDialog {
+        /// Spawn a `zenity` pulsating progress dialog (common on GNOME/GTK
+        /// desktops). Falls back to `xmessage` if zenity is not found.
+        /// Returns immediately — the dialog runs in the spawned process.
+        pub fn show() -> Self {
+            let child = Command::new("zenity")
+                .args([
+                    "--progress",
+                    "--pulsate",
+                    "--text=Starting Streamlink...",
+                    "--title=Twitch Monitor",
+                    "--no-cancel",
+                    "--width=280",
+                ])
+                .stdin(Stdio::piped())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null())
+                .spawn()
+                .or_else(|_| {
+                    Command::new("xmessage")
+                        .args(["-center", "-buttons", "", "Starting Streamlink..."])
+                        .stdout(Stdio::null())
+                        .stderr(Stdio::null())
+                        .spawn()
+                })
+                .ok();
+
+            Self {
+                child: Arc::new(Mutex::new(child)),
+                shown_at: std::time::Instant::now(),
+            }
+        }
+
+        /// Kill the dialog process, but keep it visible for at least 3 seconds
+        /// from when it was shown. Spawns a thread for the wait so this returns
+        /// immediately.
+        pub fn close(self) {
+            let min_display = std::time::Duration::from_secs(3);
+            let remaining = min_display.saturating_sub(self.shown_at.elapsed());
+            let child_arc = self.child;
+            std::thread::spawn(move || {
+                if !remaining.is_zero() {
+                    std::thread::sleep(remaining);
+                }
+                if let Ok(mut guard) = child_arc.lock() {
+                    if let Some(ref mut child) = *guard {
+                        let _ = child.kill();
+                        let _ = child.wait();
+                    }
+                }
+            });
+        }
+    }
+}
+
+// ── Stub for all other platforms (macOS, etc.) ─────────────────────────────
+
+#[cfg(not(any(windows, target_os = "linux")))]
 mod imp {
     pub struct StartingDialog;
     impl StartingDialog {
