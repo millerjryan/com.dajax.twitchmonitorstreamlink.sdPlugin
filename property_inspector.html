@@ -392,6 +392,23 @@
     }
     .streamlink-path { display: none; }
     .streamlink-path.visible { display: block; }
+    select {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      color: var(--text);
+      padding: 7px 10px;
+      font-size: 12px;
+      font-family: inherit;
+      outline: none;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    select:focus {
+      border-color: var(--purple);
+      box-shadow: 0 0 0 2px rgba(145,70,255,0.2);
+    }
   </style>
 </head>
 <body>
@@ -475,7 +492,12 @@
     </label>
   </div>
   <div class="field streamlink-path" id="streamlink-path-field">
-    <label for="inp-streamlink-path">Streamlink Executable Path <span style="font-weight:400;opacity:0.6">(optional)</span></label>
+    <label for="sel-streamlink-player">Player</label>
+    <select id="sel-streamlink-player">
+      <option value="vlc">VLC</option>
+      <option value="mpv">MPV</option>
+    </select>
+    <label for="inp-streamlink-path" style="margin-top:8px">Streamlink Executable Path <span style="font-weight:400;opacity:0.6">(optional)</span></label>
     <input type="text" id="inp-streamlink-path" placeholder="streamlink  (or full path, e.g. C:\streamlink\streamlink.exe)" autocomplete="off" spellcheck="false"/>
   </div>
 </div>
@@ -602,10 +624,11 @@ btnDisconnect.addEventListener("click", () => {
   sendPlugin({ cmd: "clearAuth" });
 });
 
-const actionBrowser       = document.getElementById("action-browser");
-const actionStreamlink    = document.getElementById("action-streamlink");
-const streamlinkPathField = document.getElementById("streamlink-path-field");
-const inpStreamlinkPath   = document.getElementById("inp-streamlink-path");
+const actionBrowser         = document.getElementById("action-browser");
+const actionStreamlink      = document.getElementById("action-streamlink");
+const streamlinkPathField   = document.getElementById("streamlink-path-field");
+const inpStreamlinkPath     = document.getElementById("inp-streamlink-path");
+const selStreamlinkPlayer   = document.getElementById("sel-streamlink-player");
 
 function updateActionUI() {
   if (actionStreamlink.checked) {
@@ -767,6 +790,7 @@ function applySettings(settings) {
   const action = settings.buttonAction || "browser";
   actionBrowser.checked    = (action === "browser");
   actionStreamlink.checked = (action === "streamlink");
+  selStreamlinkPlayer.value = settings.streamlinkPlayer || "vlc";
   inpStreamlinkPath.value  = settings.streamlinkPath || "";
   updateActionUI();
 
@@ -820,8 +844,9 @@ btnSave.addEventListener("click", () => {
     alertVolume:     parseInt(inpVolume.value, 10),
     alertSoundData:  (chkAlertEnabled.checked && currentSoundData) ? currentSoundData : null,
     alertSoundName:  (chkAlertEnabled.checked && currentSoundName) ? currentSoundName : "",
-    buttonAction:    actionStreamlink.checked ? "streamlink" : "browser",
-    streamlinkPath:  inpStreamlinkPath.value.trim()
+    buttonAction:      actionStreamlink.checked ? "streamlink" : "browser",
+    streamlinkPlayer:  selStreamlinkPlayer.value,
+    streamlinkPath:    inpStreamlinkPath.value.trim()
   });
 
   sendJSON({

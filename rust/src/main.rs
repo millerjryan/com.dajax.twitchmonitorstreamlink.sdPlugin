@@ -81,6 +81,8 @@ pub struct ButtonSettings {
     pub button_action: String,
     #[serde(rename = "streamlinkPath", default)]
     pub streamlink_path: String,
+    #[serde(rename = "streamlinkPlayer", default = "default_streamlink_player")]
+    pub streamlink_player: String,
     #[serde(rename = "targetProfile", default)]
     pub target_profile: String,
     #[serde(rename = "followIndex", default = "default_follow_index")]
@@ -90,6 +92,7 @@ pub struct ButtonSettings {
 fn default_volume() -> u8 { 80 }
 fn default_btn_action() -> String { "browser".into() }
 fn default_follow_index() -> u32 { 1 }
+fn default_streamlink_player() -> String { "vlc".into() }
 
 impl Default for ButtonSettings {
     fn default() -> Self {
@@ -101,6 +104,7 @@ impl Default for ButtonSettings {
             alert_volume: 80,
             button_action: "browser".into(),
             streamlink_path: String::new(),
+            streamlink_player: "vlc".into(),
             target_profile: String::new(),
             follow_index: 1,
         }
@@ -1026,13 +1030,14 @@ async fn handle_message(app: AppHandle, raw: &str) {
             }
 
             if action == FOLLOWS_INDEX_ACTION {
-                let (resolved_login, btn_action, streamlink_path) = {
+                let (resolved_login, btn_action, streamlink_path, streamlink_player) = {
                     let ctxs = app.contexts.read().await;
                     if let Some(state) = ctxs.get(&context) {
                         (
                             state.resolved_login.clone(),
                             state.settings.button_action.clone(),
                             state.settings.streamlink_path.clone(),
+                            state.settings.streamlink_player.clone(),
                         )
                     } else { return; }
                 };
@@ -1044,11 +1049,13 @@ async fn handle_message(app: AppHandle, raw: &str) {
 
                 if btn_action == "streamlink" {
                     let exe = if streamlink_path.is_empty() { "streamlink".to_string() } else { streamlink_path };
+                    let player = if streamlink_player.is_empty() { "vlc".to_string() } else { streamlink_player };
                     let url = format!("https://twitch.tv/{}", urlencoding::encode(&login));
-                    app.log(&format!("Launching streamlink: {exe} {url} best")).await;
+                    app.log(&format!("Launching streamlink: {exe} --player {player} {url} best")).await;
                     let starting_dialog = dialog::StartingDialog::show();
                     tokio::task::spawn_local(async move {
                         match std::process::Command::new(&exe)
+                            .arg("--player").arg(&player)
                             .arg(&url)
                             .arg("best")
                             .spawn()
@@ -1066,13 +1073,14 @@ async fn handle_message(app: AppHandle, raw: &str) {
 
             if action != PLUGIN_ACTION { return; }
 
-            let (username, btn_action, streamlink_path) = {
+            let (username, btn_action, streamlink_path, streamlink_player) = {
                 let ctxs = app.contexts.read().await;
                 if let Some(state) = ctxs.get(&context) {
                     (
                         state.settings.twitch_username.clone(),
                         state.settings.button_action.clone(),
                         state.settings.streamlink_path.clone(),
+                        state.settings.streamlink_player.clone(),
                     )
                 } else { return; }
             };
@@ -1081,11 +1089,13 @@ async fn handle_message(app: AppHandle, raw: &str) {
 
             if btn_action == "streamlink" {
                 let exe = if streamlink_path.is_empty() { "streamlink".to_string() } else { streamlink_path };
+                let player = if streamlink_player.is_empty() { "vlc".to_string() } else { streamlink_player };
                 let url = format!("https://twitch.tv/{}", urlencoding::encode(&username));
-                app.log(&format!("Launching streamlink: {exe} {url} best")).await;
+                app.log(&format!("Launching streamlink: {exe} --player {player} {url} best")).await;
                 let starting_dialog = dialog::StartingDialog::show();
                 tokio::task::spawn_local(async move {
                     match std::process::Command::new(&exe)
+                        .arg("--player").arg(&player)
                         .arg(&url)
                         .arg("best")
                         .spawn()

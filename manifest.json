@@ -20,12 +20,8 @@
         "alertSoundName": "",
         "alertVolume": 80,
         "buttonAction": "browser",
-        "streamlinkPath": ""
-      },
-      "UserTitleEnabled": false,
-      "SupportedInMultiActions": false,
-      "Controllers": ["Keypad"],
-      "PropertyInspectorPath": "property_inspector.html"
+        "streamlinkPath": "",
+        "streamlinkPlayer": "vlc"
     },
     {
       "UUID": "com.dajax.twitchmonitorstreamlink.followsindex",
@@ -47,12 +43,8 @@
         "alertSoundName": "",
         "alertVolume": 80,
         "buttonAction": "browser",
-        "streamlinkPath": ""
-      },
-      "UserTitleEnabled": false,
-      "SupportedInMultiActions": false,
-      "Controllers": ["Keypad"],
-      "PropertyInspectorPath": "property_inspector_follows_index.html"
+        "streamlinkPath": "",
+        "streamlinkPlayer": "vlc"
     },
     {
       "UUID": "com.dajax.twitchmonitorstreamlink.followslive",
