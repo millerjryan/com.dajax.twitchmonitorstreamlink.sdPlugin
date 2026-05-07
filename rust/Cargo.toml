@@ -22,6 +22,9 @@ ab_glyph       = "0.2"
 url            = "2"
 rodio          = "0.17"
 
+[target.'cfg(windows)'.dependencies]
+winapi = { version = "0.3", features = ["winuser", "libloaderapi", "windef"] }
+
 [profile.release]
 opt-level = "z"
 lto = true

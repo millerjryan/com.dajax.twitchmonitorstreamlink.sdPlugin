@@ -2,6 +2,7 @@ mod twitch;
 mod images;
 mod audio;
 mod oauth;
+mod dialog;
 
 use std::collections::HashMap;
 use std::env;
@@ -1045,14 +1046,15 @@ async fn handle_message(app: AppHandle, raw: &str) {
                     let exe = if streamlink_path.is_empty() { "streamlink".to_string() } else { streamlink_path };
                     let url = format!("https://twitch.tv/{}", urlencoding::encode(&login));
                     app.log(&format!("Launching streamlink: {exe} {url} best")).await;
+                    let starting_dialog = dialog::StartingDialog::show();
                     tokio::task::spawn_local(async move {
                         match std::process::Command::new(&exe)
                             .arg(&url)
                             .arg("best")
                             .spawn()
                         {
-                            Ok(_) => {}
-                            Err(e) => eprintln!("Failed to launch streamlink ({exe}): {e}"),
+                            Ok(_) => { starting_dialog.close(); }
+                            Err(e) => { starting_dialog.close(); eprintln!("Failed to launch streamlink ({exe}): {e}"); }
                         }
                     });
                 } else {
@@ -1081,14 +1083,15 @@ async fn handle_message(app: AppHandle, raw: &str) {
                 let exe = if streamlink_path.is_empty() { "streamlink".to_string() } else { streamlink_path };
                 let url = format!("https://twitch.tv/{}", urlencoding::encode(&username));
                 app.log(&format!("Launching streamlink: {exe} {url} best")).await;
+                let starting_dialog = dialog::StartingDialog::show();
                 tokio::task::spawn_local(async move {
                     match std::process::Command::new(&exe)
                         .arg(&url)
                         .arg("best")
                         .spawn()
                     {
-                        Ok(_) => {}
-                        Err(e) => eprintln!("Failed to launch streamlink ({exe}): {e}"),
+                        Ok(_) => { starting_dialog.close(); }
+                        Err(e) => { starting_dialog.close(); eprintln!("Failed to launch streamlink ({exe}): {e}"); }
                     }
                 });
             } else {
