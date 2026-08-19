@@ -1,4 +1,5 @@
 mod twitch;
+mod kick;
 mod images;
 mod audio;
 mod oauth;
@@ -22,6 +23,7 @@ use tokio_tungstenite::{connect_async, tungstenite::Message};
 const PLUGIN_ACTION:        &str = "com.dajax.twitchmonitorstreamlink.monitor";
 const FOLLOWS_ACTION:       &str = "com.dajax.twitchmonitorstreamlink.followslive";
 const FOLLOWS_INDEX_ACTION: &str = "com.dajax.twitchmonitorstreamlink.followsindex";
+const KICK_ACTION:          &str = "com.dajax.twitchmonitorstreamlink.kickmonitor";
 const POLL_INTERVAL:        Duration = Duration::from_secs(60);
 const REDIRECT_PORT:  u16 = 7878;
 
@@ -69,6 +71,8 @@ pub struct GlobalSettings {
 pub struct ButtonSettings {
     #[serde(rename = "twitchUsername", default)]
     pub twitch_username: String,
+    #[serde(rename = "kickUsername", default)]
+    pub kick_username: String,
     #[serde(rename = "alertEnabled", default)]
     pub alert_enabled: bool,
     #[serde(rename = "alertSoundData")]
@@ -98,6 +102,7 @@ impl Default for ButtonSettings {
     fn default() -> Self {
         Self {
             twitch_username: String::new(),
+            kick_username: String::new(),
             alert_enabled: false,
             alert_sound_data: None,
             alert_sound_name: String::new(),
@@ -112,7 +117,7 @@ impl Default for ButtonSettings {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum ContextType { Monitor, Follows, FollowsIndex }
+pub enum ContextType { Monitor, Follows, FollowsIndex, KickMonitor }
 
 #[derive(Debug, Clone)]
 pub struct ContextState {
@@ -166,6 +171,21 @@ impl ContextState {
     fn new_follows_index(settings: ButtonSettings) -> Self {
         Self {
             ctx_type: ContextType::FollowsIndex,
+            settings,
+            device: None,
+            user_id: None,
+            avatar_url: None,
+            display_name: None,
+            is_live: None,
+            viewer_count: None,
+            has_image: false,
+            follows_count: None,
+            resolved_login: None,
+        }
+    }
+    fn new_kick_monitor(settings: ButtonSettings) -> Self {
+        Self {
+            ctx_type: ContextType::KickMonitor,
             settings,
             device: None,
             user_id: None,
@@ -439,6 +459,119 @@ async fn poll_monitor(app: AppHandle, context: String) {
         "payload": {
             "displayName": dname,
             "avatarUrl":   avatar_url,
+            "isLive":      is_live,
+            "viewerCount": viewer_count,
+        }
+    })).await;
+}
+
+async fn poll_kick_monitor(app: AppHandle, context: String) {
+    let (username, prev_live, prev_viewer, has_image) = {
+        let ctxs = app.contexts.read().await;
+        let state = match ctxs.get(&context) { Some(s) => s, None => return };
+        (
+            state.settings.kick_username.clone(),
+            state.is_live,
+            state.viewer_count,
+            state.has_image,
+        )
+    };
+
+    if username.trim().is_empty() {
+        if let Ok(img) = images::placeholder(false).await {
+            app.set_image(&context, &img).await;
+        }
+        app.set_title(&context, "Setup\nRequired").await;
+        return;
+    }
+
+    let status = match kick::get_channel_status(&username).await {
+        Ok(s) => s,
+        Err(e) => {
+            app.log(&format!("Kick poll error ({username}): {e}")).await;
+            app.send(json!({
+                "action":  KICK_ACTION,
+                "event":   "sendToPropertyInspector",
+                "context": context,
+                "payload": { "error": e }
+            })).await;
+            return;
+        }
+    };
+
+    let is_live      = status.is_live;
+    let viewer_count = status.viewer_count;
+
+    // Alert on offline → live transition
+    if is_live && prev_live == Some(false) {
+        let (alert_enabled, sound_data, volume) = {
+            let ctxs = app.contexts.read().await;
+            if let Some(state) = ctxs.get(&context) {
+                let s = &state.settings;
+                (s.alert_enabled, s.alert_sound_data.clone(), s.alert_volume)
+            } else {
+                (false, None, 80)
+            }
+        };
+        if alert_enabled {
+            let vol = volume as f32 / 100.0;
+            if let Some(data) = sound_data {
+                tokio::task::spawn_local(async move {
+                    audio::play_base64_mp3(&data, vol).await;
+                });
+            } else if let Some(fallback) = audio::find_bundled_sound() {
+                tokio::task::spawn_local(async move {
+                    audio::play_file(&fallback, vol).await;
+                });
+            }
+        }
+    }
+
+    // Rebuild image when needed
+    let viewer_changed = is_live && viewer_count != prev_viewer;
+    if is_live != prev_live.unwrap_or(!is_live) || !has_image || viewer_changed {
+        let img = match &status.avatar_url {
+            Some(url) => match images::avatar(url, !is_live).await {
+                Ok(i) => i,
+                Err(_) => images::placeholder(is_live).await.unwrap_or_default(),
+            },
+            None => images::placeholder(is_live).await.unwrap_or_default(),
+        };
+
+        let img = if is_live {
+            let img = images::add_live_badge(&img).await.unwrap_or(img);
+            if let Some(vc) = viewer_count {
+                images::add_viewer_count(&img, vc).await.unwrap_or(img)
+            } else { img }
+        } else { img };
+
+        app.set_image(&context, &img).await;
+
+        let mut ctxs = app.contexts.write().await;
+        if let Some(state) = ctxs.get_mut(&context) {
+            state.viewer_count = viewer_count;
+            state.has_image    = true;
+            state.avatar_url   = status.avatar_url.clone();
+            state.display_name = Some(status.display_name.clone());
+        }
+    }
+
+    {
+        let mut ctxs = app.contexts.write().await;
+        if let Some(state) = ctxs.get_mut(&context) {
+            state.is_live = Some(is_live);
+        }
+    }
+
+    app.set_title(&context, "").await;
+
+    app.send(json!({
+        "action":  KICK_ACTION,
+        "event":   "sendToPropertyInspector",
+        "context": context,
+        "payload": {
+            "displayName": status.display_name,
+            "avatarUrl":   status.avatar_url,
             "isLive":      is_live,
             "viewerCount": viewer_count,
         }
@@ -915,18 +1048,32 @@ async fn handle_message(app: AppHandle, raw: &str) {
                         if !app2.contexts.read().await.contains_key(&ctx2) { break; }
                     }
                 });
+            } else if action == KICK_ACTION {
+                app.log(&format!("willAppear (kick monitor): {context}")).await;
+                app.contexts.write().await.insert(context.clone(), ContextState::new_kick_monitor(settings));
+                let app2 = app.clone();
+                let ctx2 = context.clone();
+                tokio::task::spawn_local(async move {
+                    let mut timer = interval(POLL_INTERVAL);
+                    timer.tick().await; // first tick fires immediately in tokio
+                    loop {
+                        poll_kick_monitor(app2.clone(), ctx2.clone()).await;
+                        timer.tick().await;
+                        if !app2.contexts.read().await.contains_key(&ctx2) { break; }
+                    }
+                });
             }
         }
 
         "willDisappear" => {
-            if action == PLUGIN_ACTION || action == FOLLOWS_ACTION || action == FOLLOWS_INDEX_ACTION {
+            if action == PLUGIN_ACTION || action == FOLLOWS_ACTION || action == FOLLOWS_INDEX_ACTION || action == KICK_ACTION {
                 app.log(&format!("willDisappear: {context}")).await;
                 app.contexts.write().await.remove(&context);
             }
         }
 
         "didReceiveSettings" => {
-            if action != PLUGIN_ACTION && action != FOLLOWS_ACTION && action != FOLLOWS_INDEX_ACTION { return; }
+            if action != PLUGIN_ACTION && action != FOLLOWS_ACTION && action != FOLLOWS_INDEX_ACTION && action != KICK_ACTION { return; }
             let new_settings: ButtonSettings = serde_json::from_value(
                 payload.get("settings").cloned().unwrap_or(json!({}))
             ).unwrap_or_default();
@@ -939,6 +1086,8 @@ async fn handle_message(app: AppHandle, raw: &str) {
                         s.settings.twitch_username != new_settings.twitch_username
                     } else if action == FOLLOWS_INDEX_ACTION {
                         s.settings.follow_index != new_settings.follow_index
+                    } else if action == KICK_ACTION {
+                        s.settings.kick_username != new_settings.kick_username
                     } else {
                         false
                     }
@@ -1071,6 +1220,45 @@ async fn handle_message(app: AppHandle, raw: &str) {
                 return;
             }
 
+            if action == KICK_ACTION {
+                let (username, btn_action, streamlink_path, streamlink_player) = {
+                    let ctxs = app.contexts.read().await;
+                    if let Some(state) = ctxs.get(&context) {
+                        (
+                            state.settings.kick_username.clone(),
+                            state.settings.button_action.clone(),
+                            state.settings.streamlink_path.clone(),
+                            state.settings.streamlink_player.clone(),
+                        )
+                    } else { return; }
+                };
+
+                if username.trim().is_empty() { return; }
+
+                if btn_action == "streamlink" {
+                    let exe = if streamlink_path.is_empty() { "streamlink".to_string() } else { streamlink_path };
+                    let player = if streamlink_player.is_empty() { "vlc".to_string() } else { streamlink_player };
+                    let url = format!("https://kick.com/{}", urlencoding::encode(username.trim()));
+                    app.log(&format!("Launching streamlink: {exe} --player {player} {url} best")).await;
+                    let starting_dialog = dialog::StartingDialog::show();
+                    tokio::task::spawn_local(async move {
+                        match std::process::Command::new(&exe)
+                            .arg("--player").arg(&player)
+                            .arg(&url)
+                            .arg("best")
+                            .spawn()
+                        {
+                            Ok(_) => { starting_dialog.close(); }
+                            Err(e) => { starting_dialog.close(); eprintln!("Failed to launch streamlink ({exe}): {e}"); }
+                        }
+                    });
+                } else {
+                    let url = format!("https://kick.com/{}", urlencoding::encode(username.trim()));
+                    app.send(json!({ "event": "openUrl", "payload": { "url": url } })).await;
+                }
+                return;
+            }
+
             if action != PLUGIN_ACTION { return; }
 
             let (username, btn_action, streamlink_path, streamlink_player) = {
@@ -1146,6 +1334,7 @@ async fn poll_context(app: AppHandle, context: String) {
         Some(ContextType::Monitor)      => poll_monitor(app, context).await,
         Some(ContextType::Follows)      => poll_follows(app, context).await,
         Some(ContextType::FollowsIndex) => poll_follows_index(app, context).await,
+        Some(ContextType::KickMonitor)  => poll_kick_monitor(app, context).await,
         None => {}
     }
 }

@@ -19,9 +19,15 @@ A [StreamDock](https://www.ajazz.com/pages/streamdock) / [OpenDeck](https://gith
   - When using Streamlink, choose your preferred player — **VLC** or **MPV** — directly in the property inspector
   - A **"Starting Streamlink..."** dialog appears on screen while Streamlink is launching and automatically closes once the process has started
 
+### Kick Monitor (keypad action)
+- Monitors a **Kick.com** channel — works exactly like the Twitch Monitor button
+- **No account, login, or API key required** — Kick channel data is public, so you only enter the channel's username
+- Displays the channel's profile picture — **full colour when live**, **greyscale when offline** — with a **LIVE** badge and **viewer count** overlay
+- Optional alert sound when the channel goes live
+- Button click action: **open in browser** or **launch via Streamlink** (VLC or MPV)
+
 ### Follows Live Counter (keypad action)
-- Displays how many channels you follow are currently live
-- **Press the button to instantly switch to any configured device profile** — enter the profile name in the property inspector settings
+- Displays how many channels you follow are currently live- **Press the button to instantly switch to any configured device profile** — enter the profile name in the property inspector settings
 - Profile switching is compatible with OpenDeck, StreamDock, and Elgato Stream Deck software
 
 ### Live Channel by Index (keypad action)
@@ -178,6 +184,7 @@ com.dajax.twitchmonitorstreamlink.sdPlugin/
   plugin.bat                        ← Windows entry point
   plugin.sh                         ← macOS / Linux entry point
   property_inspector.html           ← Settings UI for Twitch Monitor action
+  property_inspector_kick.html      ← Settings UI for Kick Monitor action
   property_inspector_follows.html   ← Settings UI for Follows Live Counter action
   property_inspector_follows_index.html ← Settings UI for Live Channel by Index action
   airplane-ding-dong.mp3            ← Default alert sound

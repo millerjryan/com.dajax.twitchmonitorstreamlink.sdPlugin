@@ -75,14 +75,42 @@
       "SupportedInMultiActions": false,
       "Controllers": ["Keypad"],
       "PropertyInspectorPath": "property_inspector_follows.html"
+    },
+    {
+      "UUID": "com.dajax.twitchmonitorstreamlink.kickmonitor",
+      "Icon": "images/action_icon",
+      "Name": "Kick Monitor",
+      "Tooltip": "Monitor a Kick channel's live status. Shows channel avatar in color when live, greyscale when offline. No account or API key required.",
+      "state": 0,
+      "States": [
+        {
+          "Image": "images/key_offline",
+          "Title": "",
+          "ShowTitle": false
+        }
+      ],
+      "Settings": {
+        "kickUsername": "",
+        "alertEnabled": false,
+        "alertSoundData": null,
+        "alertSoundName": "",
+        "alertVolume": 80,
+        "buttonAction": "browser",
+        "streamlinkPath": "",
+        "streamlinkPlayer": "vlc"
+      },
+      "UserTitleEnabled": false,
+      "SupportedInMultiActions": false,
+      "Controllers": ["Keypad"],
+      "PropertyInspectorPath": "property_inspector_kick.html"
     }
   ],
-  "Version": "1.4.0",
+  "Version": "1.5.0",
   "Name": "Twitch Monitor - Rust",
   "Icon": "images/icon",
   "CategoryIcon": "images/action_icon",
   "Category": "Streaming - Rust",
-  "Description": "Monitor a Twitch channel's live status. The button displays the channel's profile picture — full color when live, greyscale when offline. Configure with your Twitch API credentials.",
+  "Description": "Monitor Twitch and Kick channels' live status. The button displays the channel's profile picture — full color when live, greyscale when offline.",
   "CodePath": "plugin.sh",
   "CodePathWin": "plugin.bat",
   "CodePathMac": "plugin.sh",
