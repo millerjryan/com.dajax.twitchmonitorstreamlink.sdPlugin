@@ -47,7 +47,16 @@ jobs:
 
       - name: Install ALSA dev headers (Linux only)
         if: runner.os == 'Linux'
-        run: sudo apt-get update -q && sudo apt-get install -y libasound2-dev
+        timeout-minutes: 5
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          sudo apt-get \
+            -o Acquire::Retries=3 \
+            -o Acquire::http::Timeout=30 \
+            -o Acquire::https::Timeout=30 \
+            update
+          sudo apt-get install --no-install-recommends -y libasound2-dev
 
       - name: Cache Cargo registry & build
         uses: actions/cache@v4
