@@ -114,6 +114,7 @@ jobs:
              property_inspector.html \
              property_inspector_follows.html \
              property_inspector_follows_index.html \
+             property_inspector_kick.html \
              airplane-ding-dong.mp3 \
              "$PLUGIN/"
 
