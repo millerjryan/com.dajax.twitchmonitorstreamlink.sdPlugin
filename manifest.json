@@ -21,7 +21,8 @@
         "alertVolume": 80,
         "buttonAction": "browser",
         "streamlinkPath": "",
-        "streamlinkPlayer": "vlc"
+        "streamlinkPlayer": "vlc",
+        "streamlinkLowLatency": false
       },
       "UserTitleEnabled": false,
       "SupportedInMultiActions": false,
@@ -49,7 +50,8 @@
         "alertVolume": 80,
         "buttonAction": "browser",
         "streamlinkPath": "",
-        "streamlinkPlayer": "vlc"
+        "streamlinkPlayer": "vlc",
+        "streamlinkLowLatency": false
       },
       "UserTitleEnabled": false,
       "SupportedInMultiActions": false,
@@ -97,7 +99,8 @@
         "alertVolume": 80,
         "buttonAction": "browser",
         "streamlinkPath": "",
-        "streamlinkPlayer": "vlc"
+        "streamlinkPlayer": "vlc",
+        "streamlinkLowLatency": false
       },
       "UserTitleEnabled": false,
       "SupportedInMultiActions": false,
@@ -105,7 +108,7 @@
       "PropertyInspectorPath": "property_inspector_kick.html"
     }
   ],
-  "Version": "1.5.0",
+  "Version": "1.5.4",
   "Name": "Twitch Monitor - Rust",
   "Icon": "images/icon",
   "CategoryIcon": "images/action_icon",

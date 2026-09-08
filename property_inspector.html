@@ -499,6 +499,13 @@
     </select>
     <label for="inp-streamlink-path" style="margin-top:8px">Streamlink Executable Path <span style="font-weight:400;opacity:0.6">(optional)</span></label>
     <input type="text" id="inp-streamlink-path" placeholder="streamlink  (or full path, e.g. C:\streamlink\streamlink.exe)" autocomplete="off" spellcheck="false"/>
+    <div class="toggle-row" style="margin-top:10px">
+      <span class="toggle-label">⚡ Low latency mode</span>
+      <label class="toggle">
+        <input type="checkbox" id="chk-low-latency"/>
+        <span class="toggle-track"></span>
+      </label>
+    </div>
   </div>
 </div>
 
@@ -629,6 +636,7 @@ const actionStreamlink      = document.getElementById("action-streamlink");
 const streamlinkPathField   = document.getElementById("streamlink-path-field");
 const inpStreamlinkPath     = document.getElementById("inp-streamlink-path");
 const selStreamlinkPlayer   = document.getElementById("sel-streamlink-player");
+const chkLowLatency        = document.getElementById("chk-low-latency");
 
 function updateActionUI() {
   if (actionStreamlink.checked) {
@@ -791,6 +799,7 @@ function applySettings(settings) {
   actionBrowser.checked    = (action === "browser");
   actionStreamlink.checked = (action === "streamlink");
   selStreamlinkPlayer.value = settings.streamlinkPlayer || "vlc";
+  chkLowLatency.checked = !!settings.streamlinkLowLatency;
   inpStreamlinkPath.value  = settings.streamlinkPath || "";
   updateActionUI();
 
@@ -846,6 +855,7 @@ btnSave.addEventListener("click", () => {
     alertSoundName:  (chkAlertEnabled.checked && currentSoundName) ? currentSoundName : "",
     buttonAction:      actionStreamlink.checked ? "streamlink" : "browser",
     streamlinkPlayer:  selStreamlinkPlayer.value,
+    streamlinkLowLatency:  chkLowLatency.checked,
     streamlinkPath:    inpStreamlinkPath.value.trim()
   });
 
